@@ -1,0 +1,36 @@
+{
+  "name": "async-alpine",
+  "version": "0.1.0",
+  "description": "Load Alpine Componenets asyncronously. Allows for code splitting and lazy loading components!",
+  "author": "Alistair Shepherd <alistair@accudio.com>",
+  "license": "Apache-2.0",
+  "keywords": [],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/accudio/async-alpine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/accudio/async-alpine/issues"
+  },
+  "main": "./dist/async-alpine.script.js",
+  "exports": {
+    "require": "./dist/async-alpine.cjs.js",
+    "import": "./dist/async-alpine.esm.js",
+    "default": "./dist/async-alpine.esm.js"
+  },
+  "files": [ "dist" ],
+  "dependencies": {},
+  "devDependencies": {
+    "@skypack/package-check": "^0.2.2",
+    "chokidar": "^3.5.2",
+    "esbuild": "^0.13.15",
+    "eslint": "^8.3.0"
+  },
+  "scripts": {
+    "develop": "node ./scripts/develop.js",
+    "build": "node ./scripts/build.js",
+    "lint": "eslint src",
+    "test": "package-check"
+  }
+}

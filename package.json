@@ -5,7 +5,6 @@
   "author": "Alistair Shepherd <alistair@accudio.com>",
   "license": "Apache-2.0",
   "keywords": [],
-  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/accudio/async-alpine.git"

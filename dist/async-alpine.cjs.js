@@ -91,7 +91,7 @@ var Component = class {
 // src/core/strategies/event.js
 var event = (component) => {
   return new Promise((resolve) => {
-    window.addEventListener("alpine-async:load", (e) => {
+    window.addEventListener("async-alpine:load", (e) => {
       if (e.detail.id !== component.id)
         return;
       if (component.status !== "unloaded")
@@ -105,9 +105,11 @@ var event_default = event;
 // src/core/strategies/idle.js
 var idle = () => {
   return new Promise((resolve) => {
-    window.requestIdleCallback(() => {
-      resolve();
-    });
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(resolve);
+    } else {
+      setTimeout(resolve, 200);
+    }
   });
 };
 var idle_default = idle;
@@ -120,15 +122,9 @@ var media = (component, requirement) => {
     const mediaQuery = window.matchMedia(query);
     if (mediaQuery.matches) {
       resolve();
-      return;
+    } else {
+      mediaQuery.addEventListener("change", resolve, { once: true });
     }
-    mediaQuery.addEventListener("change", (query2) => {
-      if (!query2.matches)
-        return;
-      if (component.status !== "unloaded")
-        return;
-      resolve();
-    });
   });
 };
 var media_default = media;
@@ -142,10 +138,10 @@ var visible = (component, requirement) => {
       rootMargin = requirement.slice(rootMarginStart, -1);
     }
     const observer = new IntersectionObserver((entries) => {
-      if (!entries[0].isIntersecting)
-        return;
-      observer.unobserve(component.root.node);
-      resolve();
+      if (entries[0].isIntersecting) {
+        observer.disconnect();
+        resolve();
+      }
     }, { rootMargin });
     observer.observe(component.root.node);
   });
@@ -161,7 +157,7 @@ var AsyncAlpine = (Alpine) => {
   for (let root of roots) {
     const component = new Component(root, idIndex++);
     component.deactivate();
-    const requirements = component.strategy.split("|").map((requirement) => requirement.trim()).filter((requirement) => requirement !== "immediate");
+    const requirements = component.strategy.split("|").map((requirement) => requirement.trim()).filter((requirement) => requirement !== "immediate").filter((requirement) => requirement !== "eager");
     if (!requirements.length) {
       component.download(Alpine);
       continue;

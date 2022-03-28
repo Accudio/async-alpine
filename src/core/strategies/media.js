@@ -5,13 +5,9 @@ const media = (component, requirement) => {
     const mediaQuery = window.matchMedia(query);
     if (mediaQuery.matches) {
       resolve();
-      return;
+    } else {
+      mediaQuery.addEventListener('change', resolve, { once: true });
     }
-    mediaQuery.addEventListener('change', query => {
-      if (!query.matches) return;
-      if (component.status !== 'unloaded') return;
-      resolve();
-    });
   });
 };
 

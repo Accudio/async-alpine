@@ -8,9 +8,10 @@ const visible = (component, requirement) => {
     }
 
     const observer = new IntersectionObserver(entries => {
-      if (!entries[0].isIntersecting) return;
-      observer.unobserve(component.root.node);
-      resolve();
+      if (entries[0].isIntersecting) {
+        observer.disconnect();
+        resolve();
+      }
     }, { rootMargin });
     observer.observe(component.root.node);
   });

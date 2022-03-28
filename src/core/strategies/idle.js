@@ -1,8 +1,10 @@
 const idle = () => {
   return new Promise(resolve => {
-    window.requestIdleCallback(() => {
-      resolve();
-    });
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(resolve);
+    } else {
+      setTimeout(resolve, 200);
+    }
   });
 };
 

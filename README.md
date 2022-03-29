@@ -1,6 +1,6 @@
 # Async Alpine
 
-Load Alpine Componenets asyncronously. Allows for code splitting and lazy loading components!
+Load Alpine Components asyncronously. Allows for code splitting and lazy loading components!
 
 ***This is still very experimental and is not ready for production use!***
 

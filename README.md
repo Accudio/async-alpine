@@ -242,6 +242,7 @@ Strategies can also be combined by separating with pipe `|`, allowing for advanc
 
 - Limitation: nesting `lx-load` does not guarantee the order in which components load. This will likely make nested components that rely on each other inconsistent.
 - Todo: Support `data-x-` attributes and [custom prefixes](https://github.com/alpinejs/alpine/discussions/2042#discussioncomment-1304957)
+- Todo: Support `@` and `:` attributes
 
 ## License and Credits
 

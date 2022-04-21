@@ -240,10 +240,9 @@ Strategies can also be combined by separating with pipe `|`, allowing for advanc
 
 ## Limitations and Todo
 
-- Limitation: nesting `lx-load` does not guarantee the order in which components load. This will likely make nested components that rely on each other inconsistent.
-- Todo: Support `data-x-` attributes and [custom prefixes](https://github.com/alpinejs/alpine/discussions/2042#discussioncomment-1304957)
-- Todo: Support `@` and `:` attributes
-- Todo: Allow for registering async components once instead of every instance
+- Limitation: nesting `ax-load` does not guarantee the order in which components load. This will likely make nested components that rely on each other inconsistent.
+- Limitation: Does not support `data-x-` attributes and [custom prefixes](https://github.com/alpinejs/alpine/discussions/2042#discussioncomment-1304957)
+- Limitation: `ax-load-src` has to be included on every instance, even if the component URL has already been specified.
 
 ## License and Credits
 

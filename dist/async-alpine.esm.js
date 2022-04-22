@@ -55,7 +55,10 @@ var Component = class {
   }
   async download(Alpine) {
     this.status = "loading";
-    const module = await import(this.src);
+    const module = await import(
+      /* webpackIgnore: true */
+      this.src
+    );
     let whichExport = module[this.name] || module.default || Object.values(module)[0] || false;
     if (!whichExport)
       return;

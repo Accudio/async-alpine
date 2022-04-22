@@ -45,7 +45,10 @@ const Component = class {
   async download(Alpine) {
     this.status = 'loading';
 
-    const module = await import(this.src);
+    const module = await import(
+      /* webpackIgnore: true */
+      this.src
+    );
 
     // work out which export to use in order of preference:
     // name; default; first export

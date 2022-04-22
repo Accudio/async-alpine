@@ -16,6 +16,7 @@ var config = {
   prefix: "ax-",
   root: "ax-load",
   src: "ax-load-src",
+  id: "ax-id",
   defaultStrategy: "immediate",
   alpine: {
     prefix: "x-",
@@ -54,7 +55,7 @@ var Component = class {
       node: root,
       attributes: getAlpineAttrs(root)
     };
-    root.id = this.root;
+    root.setAttribute(config_default.id, this.id);
     this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el).length).filter((el) => !el.hasAttribute(config_default.root)).filter((el) => el.closest(`[${config_default.root}]`) === root).map((node) => ({
       node,
       attributes: getAlpineAttrs(node)

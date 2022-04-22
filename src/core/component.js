@@ -16,7 +16,7 @@ const Component = class {
     };
 
     // set id attribute if not already
-    root.id = this.root;
+    root.setAttribute(config.id, this.id);
 
     // get children of this component
     this.children = [ ...root.querySelectorAll('*') ]

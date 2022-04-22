@@ -11,66 +11,52 @@ __export(exports, {
   default: () => AsyncAlpine
 });
 
-// src/core/config/index.js
-var config = {
-  prefix: "ax-",
-  root: "ax-load",
-  src: "ax-load-src",
-  id: "ax-id",
-  defaultStrategy: "immediate",
-  alpine: {
-    prefixes: ["x-", ":", "@"],
-    data: "x-data",
-    cloak: "x-cloak"
-  }
-};
-var config_default = config;
-
 // src/core/attributes.js
-var getAlpineAttrs = (el) => {
+var getAlpineAttrs = (el, config2) => {
   return [...el.attributes].map((el2) => el2.name).filter((attr) => {
-    for (let prefix of config_default.alpine.prefixes) {
+    for (let prefix of config2.alpine.attributes) {
       if (attr.startsWith(prefix))
         return true;
     }
     return false;
-  }).filter((attr) => attr !== config_default.alpine.cloak);
+  }).filter((attr) => attr !== `${config2.alpine.prefix}cloak`);
 };
-var disableAttributes = (el) => {
+var disableAttributes = (el, config2) => {
   for (let attribute of el.attributes) {
-    el.node.setAttribute(config_default.prefix + attribute, el.node.getAttribute(attribute));
+    el.node.setAttribute(config2.prefix + attribute, el.node.getAttribute(attribute));
     el.node.removeAttribute(attribute);
   }
 };
-var enableAttributes = (el) => {
+var enableAttributes = (el, config2) => {
   for (let attribute of el.attributes) {
-    el.node.setAttribute(attribute, el.node.getAttribute(config_default.prefix + attribute));
-    el.node.removeAttribute(config_default.prefix + attribute);
+    el.node.setAttribute(attribute, el.node.getAttribute(config2.prefix + attribute));
+    el.node.removeAttribute(config2.prefix + attribute);
   }
 };
 
 // src/core/component.js
 var Component = class {
-  constructor(root, index) {
+  constructor(root, config2, index) {
+    this.config = config2;
     this.status = "unloaded";
-    this.src = root.getAttribute(config_default.src);
-    this.strategy = root.getAttribute(config_default.root) || config_default.defaultStrategy;
-    this.name = root.getAttribute(config_default.alpine.data).split("(")[0];
-    this.id = root.id || config_default.prefix + index;
+    this.src = root.getAttribute(config2.src);
+    this.strategy = root.getAttribute(config2.root) || config2.defaultStrategy;
+    this.name = root.getAttribute(`${config2.alpine.prefix}data`).split("(")[0];
+    this.id = root.id || config2.prefix + index;
     this.root = {
       node: root,
-      attributes: getAlpineAttrs(root)
+      attributes: getAlpineAttrs(root, this.config)
     };
-    root.setAttribute(config_default.id, this.id);
-    this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el).length).filter((el) => !el.hasAttribute(config_default.root)).filter((el) => el.closest(`[${config_default.root}]`) === root).map((node) => ({
+    root.setAttribute(config2.id, this.id);
+    this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el, this.config).length).filter((el) => !el.hasAttribute(config2.root)).filter((el) => el.closest(`[${config2.root}]`) === root).map((node) => ({
       node,
-      attributes: getAlpineAttrs(node)
+      attributes: getAlpineAttrs(node, this.config)
     }));
   }
   deactivate() {
-    disableAttributes(this.root);
+    disableAttributes(this.root, this.config);
     for (let child of this.children) {
-      disableAttributes(child);
+      disableAttributes(child, this.config);
     }
   }
   async download(Alpine) {
@@ -86,13 +72,13 @@ var Component = class {
     this.activate();
   }
   activate() {
-    enableAttributes(this.root);
+    enableAttributes(this.root, this.config);
     for (let child of this.children) {
-      enableAttributes(child);
+      enableAttributes(child, this.config);
     }
-    this.root.node.removeAttribute(config_default.alpine.cloak);
+    this.root.node.removeAttribute(`${this.config.prefix}cloak`);
     for (let child of this.children) {
-      child.node.removeAttribute(config_default.alpine.cloak);
+      child.node.removeAttribute(`${this.config.prefix}cloak`);
     }
     this.status = "loaded";
   }
@@ -158,14 +144,32 @@ var visible = (component, requirement) => {
 };
 var visible_default = visible;
 
+// src/core/config/index.js
+var config = {
+  prefix: "ax-",
+  root: "ax-load",
+  src: "ax-load-src",
+  id: "ax-id",
+  defaultStrategy: "immediate",
+  alpine: {
+    prefix: "x-",
+    attributes: ["x-", ":", "@"]
+  }
+};
+var config_default = config;
+
 // src/core/async-alpine.js
 var idIndex = 1;
-var AsyncAlpine = (Alpine) => {
+var AsyncAlpine = (Alpine, opts = {}) => {
   const roots = document.querySelectorAll(`[${config_default.root}]`);
   if (!roots)
     return;
+  if (opts.prefix) {
+    config_default.alpine.prefix = opts.prefix;
+    config_default.alpine.attributes.push(opts.prefix);
+  }
   for (let root of roots) {
-    const component = new Component(root, idIndex++);
+    const component = new Component(root, config_default, idIndex++);
     component.deactivate();
     const requirements = component.strategy.split("|").map((requirement) => requirement.trim()).filter((requirement) => requirement !== "immediate").filter((requirement) => requirement !== "eager");
     if (!requirements.length) {

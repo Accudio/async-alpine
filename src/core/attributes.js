@@ -1,18 +1,16 @@
-import config from './config/index.js';
-
-const getAlpineAttrs = el => {
+const getAlpineAttrs = (el, config) => {
   return [ ...el.attributes ]
     .map(el => el.name)
     .filter(attr => {
-      for (let prefix of config.alpine.prefixes) {
+      for (let prefix of config.alpine.attributes) {
         if (attr.startsWith(prefix)) return true;
       }
       return false;
     })
-    .filter(attr => attr !== config.alpine.cloak);
+    .filter(attr => attr !== `${config.alpine.prefix}cloak`);
 };
 
-const disableAttributes = el => {
+const disableAttributes = (el, config) => {
   for (let attribute of el.attributes) {
     el.node.setAttribute(
       config.prefix + attribute,
@@ -22,7 +20,7 @@ const disableAttributes = el => {
   }
 };
 
-const enableAttributes = el => {
+const enableAttributes = (el, config) => {
   for (let attribute of el.attributes) {
     el.node.setAttribute(attribute,
       el.node.getAttribute(config.prefix + attribute)

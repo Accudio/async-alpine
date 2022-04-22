@@ -5,9 +5,8 @@ const config = {
   id: 'ax-id',
   defaultStrategy: 'immediate',
   alpine: {
-    prefixes: [ 'x-', ':', '@' ],
-    data: 'x-data',
-    cloak: 'x-cloak',
+    prefix: 'x-',
+    attributes: [ 'x-', ':', '@' ]
   },
 };
 

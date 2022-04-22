@@ -1,18 +1,16 @@
-import { getAlpineAttrs } from './attributes.js';
-import { enableAttributes, disableAttributes } from './attributes.js';
-
-import config from './config/index.js';
+import { getAlpineAttrs, enableAttributes, disableAttributes } from './attributes.js';
 
 const Component = class {
-  constructor(root, index) {
+  constructor(root, config, index) {
+    this.config = config;
     this.status = 'unloaded';
     this.src = root.getAttribute(config.src);
     this.strategy = root.getAttribute(config.root) || config.defaultStrategy;
-    this.name = root.getAttribute(config.alpine.data).split('(')[0];
+    this.name = root.getAttribute(`${config.alpine.prefix}data`).split('(')[0];
     this.id = root.id || (config.prefix + index);
     this.root = {
       node: root,
-      attributes: getAlpineAttrs(root),
+      attributes: getAlpineAttrs(root, this.config),
     };
 
     // set id attribute if not already
@@ -21,7 +19,7 @@ const Component = class {
     // get children of this component
     this.children = [ ...root.querySelectorAll('*') ]
       // filter out only elements with alpine attributes
-      .filter(el => getAlpineAttrs(el).length)
+      .filter(el => getAlpineAttrs(el, this.config).length)
       // remove any items with `config.root` since they'll manage themselves
       .filter(el => !el.hasAttribute(config.root))
       // only get elements directly controlled by this component
@@ -29,15 +27,15 @@ const Component = class {
       // restructure to include attribute names too
       .map(node => ({
         node,
-        attributes: getAlpineAttrs(node),
+        attributes: getAlpineAttrs(node, this.config),
       }));
   }
 
   // disable component being handled by Alpine
   deactivate() {
-    disableAttributes(this.root);
+    disableAttributes(this.root, this.config);
     for (let child of this.children) {
-      disableAttributes(child);
+      disableAttributes(child, this.config);
     }
   }
 
@@ -65,15 +63,15 @@ const Component = class {
   // activate component being handled by Alpine, remove x-cloak attributes and update status
   activate() {
     // update attributes
-    enableAttributes(this.root);
+    enableAttributes(this.root, this.config);
     for (let child of this.children) {
-      enableAttributes(child);
+      enableAttributes(child, this.config);
     }
 
     // remove cloak
-    this.root.node.removeAttribute(config.alpine.cloak);
+    this.root.node.removeAttribute(`${this.config.prefix}cloak`);
     for (let child of this.children) {
-      child.node.removeAttribute(config.alpine.cloak);
+      child.node.removeAttribute(`${this.config.prefix}cloak`);
     }
 
     // update status

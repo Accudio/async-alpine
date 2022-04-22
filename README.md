@@ -17,7 +17,8 @@ Load Alpine Components asyncronously. Allows for code splitting and lazy loading
    - [media](#media)
    - [event](#event)
    - [Combine strategies](#combine-strategies)
-- [Limitations and Todo](#limitations-and-todo)
+- [Advanced Options](#advanced-options)
+- [Current Limitations](#current-limitations)
 - [License and Credits](#license-and-credits)
 
 ***
@@ -238,11 +239,28 @@ Strategies can also be combined by separating with pipe `|`, allowing for advanc
 
 ***
 
-## Limitations and Todo
+## Advanced Options
+
+Advanced options are provided in an optional second parameter to `AsyncAlpine` as an object
+
+```js
+AsyncAlpine(Alpine, {
+  prefix: 'data-x-'
+})
+```
+
+### Available Options
+
+| Option Name   | property | Default | Notes |
+| ------------- | -------- | ------- | ----- |
+| Custom Prefix | `prefix` | `x-`    | If you set a [custom prefixes](https://github.com/alpinejs/alpine/discussions/2042#discussioncomment-1304957) for Alpine.js, set this here also |
+
+***
+
+## Current Limitations
 
 - Limitation: nesting `ax-load` does not guarantee the order in which components load. This will likely make nested components that rely on each other inconsistent.
-- Limitation: Does not support `data-x-` attributes and [custom prefixes](https://github.com/alpinejs/alpine/discussions/2042#discussioncomment-1304957)
-- Limitation: `ax-load-src` has to be included on every instance, even if the component URL has already been specified.
+- Limitation: `ax-load-src` has to be included on every instance, even if the component URL has already been specified in another component.
 
 ## License and Credits
 

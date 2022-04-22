@@ -10,15 +10,21 @@ const AsyncAlpine = (Alpine, opts = {}) => {
   const roots = document.querySelectorAll(`[${config.root}]`);
   if (!roots) return;
 
+  // instance of AsyncAlpine
+  const instance = {
+    config,
+    cache: {},
+  };
+
   // if a prefix has been passed in from `opt`, update config
   if (opts.prefix) {
-    config.alpine.prefix = opts.prefix;
-    config.alpine.attributes.push(opts.prefix);
+    instance.config.alpine.prefix = opts.prefix;
+    instance.config.alpine.attributes.push(opts.prefix);
   }
 
   // for each root, get the loading strategy and any alpine elements controlled by this component
   for (let root of roots) {
-    const component = new Component(root, config, idIndex++);
+    const component = new Component(root, instance, idIndex++);
 
     // disable this component
     component.deactivate();

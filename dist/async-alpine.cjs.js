@@ -36,49 +36,55 @@ var enableAttributes = (el, config2) => {
 
 // src/core/component.js
 var Component = class {
-  constructor(root, config2, index) {
-    this.config = config2;
+  constructor(root, instance, index) {
+    this.instance = instance;
     this.status = "unloaded";
-    this.src = root.getAttribute(config2.src);
-    this.strategy = root.getAttribute(config2.root) || config2.defaultStrategy;
-    this.name = root.getAttribute(`${config2.alpine.prefix}data`).split("(")[0];
-    this.id = root.id || config2.prefix + index;
+    this.src = root.getAttribute(this.instance.config.src);
+    this.strategy = root.getAttribute(this.instance.config.root) || this.instance.config.defaultStrategy;
+    this.name = root.getAttribute(`${this.instance.config.alpine.prefix}data`).split("(")[0];
+    this.id = root.id || this.instance.config.prefix + index;
     this.root = {
       node: root,
-      attributes: getAlpineAttrs(root, this.config)
+      attributes: getAlpineAttrs(root, this.instance.config)
     };
-    root.setAttribute(config2.id, this.id);
-    this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el, this.config).length).filter((el) => !el.hasAttribute(config2.root)).filter((el) => el.closest(`[${config2.root}]`) === root).map((node) => ({
+    root.setAttribute(this.instance.config.id, this.id);
+    this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el, this.instance.config).length).filter((el) => !el.hasAttribute(this.instance.config.root)).filter((el) => el.closest(`[${this.instance.config.root}]`) === root).map((node) => ({
       node,
-      attributes: getAlpineAttrs(node, this.config)
+      attributes: getAlpineAttrs(node, this.instance.config)
     }));
   }
   deactivate() {
-    disableAttributes(this.root, this.config);
+    disableAttributes(this.root, this.instance.config);
     for (let child of this.children) {
-      disableAttributes(child, this.config);
+      disableAttributes(child, this.instance.config);
     }
   }
   async download(Alpine) {
     this.status = "loading";
+    const module2 = await this.getModule();
+    Alpine.data(this.name, module2);
+    this.activate();
+  }
+  async getModule() {
+    if (this.instance.cache[this.src]) {
+      return this.instance.cache[this.src];
+    }
     const module2 = await import(
       /* webpackIgnore: true */
       this.src
     );
     let whichExport = module2[this.name] || module2.default || Object.values(module2)[0] || false;
-    if (!whichExport)
-      return;
-    Alpine.data(this.name, whichExport);
-    this.activate();
+    this.instance.cache[this.src] = whichExport;
+    return whichExport;
   }
   activate() {
-    enableAttributes(this.root, this.config);
+    enableAttributes(this.root, this.instance.config);
     for (let child of this.children) {
-      enableAttributes(child, this.config);
+      enableAttributes(child, this.instance.config);
     }
-    this.root.node.removeAttribute(`${this.config.prefix}cloak`);
+    this.root.node.removeAttribute(`${this.instance.config.prefix}cloak`);
     for (let child of this.children) {
-      child.node.removeAttribute(`${this.config.prefix}cloak`);
+      child.node.removeAttribute(`${this.instance.config.prefix}cloak`);
     }
     this.status = "loaded";
   }
@@ -164,12 +170,16 @@ var AsyncAlpine = (Alpine, opts = {}) => {
   const roots = document.querySelectorAll(`[${config_default.root}]`);
   if (!roots)
     return;
+  const instance = {
+    config: config_default,
+    cache: {}
+  };
   if (opts.prefix) {
-    config_default.alpine.prefix = opts.prefix;
-    config_default.alpine.attributes.push(opts.prefix);
+    instance.config.alpine.prefix = opts.prefix;
+    instance.config.alpine.attributes.push(opts.prefix);
   }
   for (let root of roots) {
-    const component = new Component(root, config_default, idIndex++);
+    const component = new Component(root, instance, idIndex++);
     component.deactivate();
     const requirements = component.strategy.split("|").map((requirement) => requirement.trim()).filter((requirement) => requirement !== "immediate").filter((requirement) => requirement !== "eager");
     if (!requirements.length) {

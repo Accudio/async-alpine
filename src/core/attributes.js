@@ -3,7 +3,12 @@ import config from './config/index.js';
 const getAlpineAttrs = el => {
   return [ ...el.attributes ]
     .map(el => el.name)
-    .filter(attr => attr.startsWith(config.alpine.prefix))
+    .filter(attr => {
+      for (let prefix of config.alpine.prefixes) {
+        if (attr.startsWith(prefix)) return true;
+      }
+      return false;
+    })
     .filter(attr => attr !== config.alpine.cloak);
 };
 

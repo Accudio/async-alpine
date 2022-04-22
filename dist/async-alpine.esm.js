@@ -6,7 +6,7 @@ var config = {
   id: "ax-id",
   defaultStrategy: "immediate",
   alpine: {
-    prefix: "x-",
+    prefixes: ["x-", ":", "@"],
     data: "x-data",
     cloak: "x-cloak"
   }
@@ -15,7 +15,13 @@ var config_default = config;
 
 // src/core/attributes.js
 var getAlpineAttrs = (el) => {
-  return [...el.attributes].map((el2) => el2.name).filter((attr) => attr.startsWith(config_default.alpine.prefix)).filter((attr) => attr !== config_default.alpine.cloak);
+  return [...el.attributes].map((el2) => el2.name).filter((attr) => {
+    for (let prefix of config_default.alpine.prefixes) {
+      if (attr.startsWith(prefix))
+        return true;
+    }
+    return false;
+  }).filter((attr) => attr !== config_default.alpine.cloak);
 };
 var disableAttributes = (el) => {
   for (let attribute of el.attributes) {

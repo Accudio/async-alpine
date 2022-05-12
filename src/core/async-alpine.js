@@ -13,7 +13,8 @@ const AsyncAlpine = (Alpine, opts = {}) => {
   // instance of AsyncAlpine
   const instance = {
     config,
-    cache: {},
+    components: [],
+    moduleCache: {},
   };
 
   // if a prefix has been passed in from `opt`, update config
@@ -22,13 +23,16 @@ const AsyncAlpine = (Alpine, opts = {}) => {
     instance.config.alpine.attributes.push(opts.prefix);
   }
 
-  // for each root, get the loading strategy and any alpine elements controlled by this component
+  // for each root, generate a component
   for (let root of roots) {
     const component = new Component(root, instance, idIndex++);
+    instance.components.push(component);
+  }
 
+  // for each component, get the loading strategy and any alpine elements controlled by this component
+  for (let component of instance.components) {
     // disable this component
     component.deactivate();
-
 
     // split strategy into parts
     const requirements = component.strategy
@@ -76,6 +80,15 @@ const AsyncAlpine = (Alpine, opts = {}) => {
         promises.push(
           strategies.event(component)
         );
+      }
+
+      // parents
+      if (requirement === 'parents') {
+        for (let parentId of component.parents) {
+          promises.push(
+            strategies.parent(component, parentId)
+          );
+        }
       }
 
     }

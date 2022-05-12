@@ -29,6 +29,16 @@ const Component = class {
         node,
         attributes: getAlpineAttrs(node, this.instance.config),
       }));
+
+    // get any component parents of this element
+    this.parents = [];
+    let cursor = root;
+    do {
+      cursor = cursor.parentNode.closest(`[${this.instance.config.root}]`);
+      if (!cursor) break;
+      const parent = instance.components.find(component => component.root.node === cursor);
+      this.parents.push(parent.id);
+    } while (cursor);
   }
 
   // disable component being handled by Alpine
@@ -54,8 +64,8 @@ const Component = class {
 
   async getModule() {
     // if this module has been downloaded before and cached, use that instead
-    if (this.instance.cache[this.src]) {
-      return this.instance.cache[this.src];
+    if (this.instance.moduleCache[this.src]) {
+      return this.instance.moduleCache[this.src];
     }
 
     const module = await import(
@@ -68,7 +78,7 @@ const Component = class {
     let whichExport = module[this.name] || module.default || Object.values(module)[0] || false;
 
     // cache component for subsequent loads
-    this.instance.cache[this.src] = whichExport;
+    this.instance.moduleCache[this.src] = whichExport;
 
     return whichExport;
   }
@@ -89,6 +99,15 @@ const Component = class {
 
     // update status
     this.status = 'loaded';
+
+    // fire event
+    window.dispatchEvent(
+      new CustomEvent('async-alpine:loaded', {
+        detail: {
+          id: this.id,
+        },
+      })
+    );
   }
 };
 

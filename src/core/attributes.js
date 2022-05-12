@@ -13,7 +13,7 @@ const getAlpineAttrs = (el, config) => {
 const disableAttributes = (el, config) => {
   for (let attribute of el.attributes) {
     el.node.setAttribute(
-      config.prefix + attribute,
+      config.prefix + sanitiseAttribute(attribute),
       el.node.getAttribute(attribute)
     );
     el.node.removeAttribute(attribute);
@@ -22,11 +22,19 @@ const disableAttributes = (el, config) => {
 
 const enableAttributes = (el, config) => {
   for (let attribute of el.attributes) {
-    el.node.setAttribute(attribute,
-      el.node.getAttribute(config.prefix + attribute)
+    const sanitisedAttr = sanitiseAttribute(attribute);
+    el.node.setAttribute(sanitisedAttr,
+      el.node.getAttribute(config.prefix + sanitisedAttr)
     );
-    el.node.removeAttribute(config.prefix + attribute);
+    el.node.removeAttribute(config.prefix + sanitisedAttr);
   }
+};
+
+const sanitiseAttribute = attribute => {
+  if (attribute.startsWith('@')) {
+    return 'x-on:' + attribute.slice(1);
+  }
+  return attribute;
 };
 
 export {

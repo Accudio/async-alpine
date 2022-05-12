@@ -10,15 +10,22 @@ var getAlpineAttrs = (el, config2) => {
 };
 var disableAttributes = (el, config2) => {
   for (let attribute of el.attributes) {
-    el.node.setAttribute(config2.prefix + attribute, el.node.getAttribute(attribute));
+    el.node.setAttribute(config2.prefix + sanitiseAttribute(attribute), el.node.getAttribute(attribute));
     el.node.removeAttribute(attribute);
   }
 };
 var enableAttributes = (el, config2) => {
   for (let attribute of el.attributes) {
-    el.node.setAttribute(attribute, el.node.getAttribute(config2.prefix + attribute));
-    el.node.removeAttribute(config2.prefix + attribute);
+    const sanitisedAttr = sanitiseAttribute(attribute);
+    el.node.setAttribute(sanitisedAttr, el.node.getAttribute(config2.prefix + sanitisedAttr));
+    el.node.removeAttribute(config2.prefix + sanitisedAttr);
   }
+};
+var sanitiseAttribute = (attribute) => {
+  if (attribute.startsWith("@")) {
+    return "x-on:" + attribute.slice(1);
+  }
+  return attribute;
 };
 
 // src/core/component.js

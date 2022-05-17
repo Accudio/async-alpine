@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <title>Module - Async Alpine tests</title>
+</head>
+<body>
+  <div
+    ax-load
+    ax-load-src="/components/output.js"
+    x-data="output('loaded')"
+  ></div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AlpineAsync from '/dist/async-alpine.esm.js';
+    AlpineAsync(Alpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

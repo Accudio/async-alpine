@@ -1,3 +1,6 @@
 node_modules/
 local/
 .idea/
+
+# tests
+/tests/dist/

@@ -85,8 +85,13 @@ const AsyncAlpine = (Alpine, opts = {}) => {
       // parents
       if (requirement === 'parents') {
         for (let parentId of component.parents) {
+          let parent = instance.components.find(component => component.id === parentId)
           promises.push(
-            strategies.parent(component, parentId)
+            strategies.parent(
+              component,
+              parent.id,
+              parent.status
+            )
           );
         }
       }

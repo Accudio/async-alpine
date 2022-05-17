@@ -82,9 +82,9 @@ const Component = class {
     }
 
     // remove cloak
-    this.root.node.removeAttribute(`${this.instance.config.prefix}cloak`);
+    this.root.node.removeAttribute(`${this.instance.config.alpine.prefix}cloak`);
     for (let child of this.children) {
-      child.node.removeAttribute(`${this.instance.config.prefix}cloak`);
+      child.node.removeAttribute(`${this.instance.config.alpine.prefix}cloak`);
     }
 
     // update status

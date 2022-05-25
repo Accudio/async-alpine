@@ -34,7 +34,7 @@ Which method you use will depend on how you prefer to use and import Alpine.js.
 
 If you load Alpine from a CDN like [jsdelivr](https://www.jsdelivr.com/package/npm/async-alpine) or [unpkg](https://unpkg.com/async-alpine) with a script tag you can load Async Alpine via the same method:
 ```html
-<script src="https://unpkg.com/async-alpine@0.1.x/dist/async-alpine.script.js"></script>
+<script src="https://unpkg.com/async-alpine@0.3.x/dist/async-alpine.script.js"></script>
 <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 ```
 

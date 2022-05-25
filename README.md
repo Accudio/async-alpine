@@ -16,6 +16,7 @@ Load Alpine Components asyncronously. Allows for code splitting and lazy loading
    - [visible](#visible)
    - [media](#media)
    - [event](#event)
+   - [parent](#parent)
    - [Combine strategies](#combine-strategies)
 - [Advanced Options](#advanced-options)
 - [Current Limitations](#current-limitations)
@@ -223,6 +224,32 @@ window.addEventListener('another-library-init', () => {
   ax-load-src="/assets/path-to-component.js"
   x-data="componentName"
 ></div>
+```
+
+### `parent`
+
+The component won't be loaded until all ancestor components with `ax-load` have been loaded.
+
+This would be used for nested components, where the order of initialisation matters. With `parent`, all `ax-load` components in the ancestor tree must be loaded before this component will load. This matches Alpine's expected inheritance and execution order so nested components should work as expected.
+
+Consider whether components would be best combined rather than relying on nesting. Nesting dynamically loaded components can be fragile and can produce download waterfalls negative for performance.
+
+Usage examples:
+
+```html
+<div
+  ax-load="visible"
+  ax-load-src="/assets/parent-component.js"
+  x-data="parentComponent"
+>
+  <div
+    ax-load="parent"
+    ax-load-src="/assets/child-component.js"
+    x-data="childComponent"
+  >
+    <span x-show="parentData">I have access to the data from parentComponent!</span>
+  </div>
+</div>
 ```
 
 ### Combine strategies

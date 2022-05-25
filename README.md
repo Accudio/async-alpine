@@ -287,8 +287,8 @@ AsyncAlpine(Alpine, {
 
 ## Current Limitations
 
-- Limitation: nesting `ax-load` does not guarantee the order in which components load. This will likely make nested components that rely on each other inconsistent.
 - Limitation: `ax-load-src` has to be included on every instance, even if the component URL has already been specified in another component.
+- Limitation: Does not support the addition of dynamic content, unlike Alpine
 
 ## License and Credits
 

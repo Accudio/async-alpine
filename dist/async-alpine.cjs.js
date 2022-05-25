@@ -54,11 +54,20 @@ var Component = class {
       node: root,
       attributes: getAlpineAttrs(root, this.instance.config)
     };
-    root.setAttribute(this.instance.config.id + this.instance.config.id, this.id);
+    root.setAttribute(this.instance.config.prefix + this.instance.config.id, this.id);
     this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el, this.instance.config).length).filter((el) => !el.hasAttribute(this.instance.config.prefix + this.instance.config.root)).filter((el) => el.closest(`[${this.instance.config.prefix}${this.instance.config.root}]`) === root).map((node) => ({
       node,
       attributes: getAlpineAttrs(node, this.instance.config)
     }));
+    this.parents = [];
+    let cursor = root;
+    do {
+      cursor = cursor.parentNode.closest(`[${this.instance.config.prefix}${this.instance.config.root}]`);
+      if (!cursor)
+        break;
+      const parent2 = instance.components.find((component) => component.root.node === cursor);
+      this.parents.push(parent2.id);
+    } while (cursor);
   }
   deactivate() {
     disableAttributes(this.root, this.instance.config);
@@ -73,15 +82,15 @@ var Component = class {
     this.activate();
   }
   async getModule() {
-    if (this.instance.cache[this.src]) {
-      return this.instance.cache[this.src];
+    if (this.instance.moduleCache[this.src]) {
+      return this.instance.moduleCache[this.src];
     }
     const module2 = await import(
       /* webpackIgnore: true */
       this.src
     );
     let whichExport = module2[this.name] || module2.default || Object.values(module2)[0] || false;
-    this.instance.cache[this.src] = whichExport;
+    this.instance.moduleCache[this.src] = whichExport;
     return whichExport;
   }
   activate() {
@@ -94,6 +103,11 @@ var Component = class {
       child.node.removeAttribute(`${this.instance.config.alpine.prefix}cloak`);
     }
     this.status = "loaded";
+    window.dispatchEvent(new CustomEvent("async-alpine:loaded", {
+      detail: {
+        id: this.id
+      }
+    }));
   }
 };
 
@@ -138,6 +152,23 @@ var media = (component, requirement) => {
 };
 var media_default = media;
 
+// src/core/strategies/parent.js
+var parent = (component, parentId, parentStatus) => {
+  return new Promise((resolve) => {
+    if (parentStatus !== "unloaded") {
+      return resolve();
+    }
+    window.addEventListener("async-alpine:loaded", (e) => {
+      if (e.detail.id !== parentId)
+        return;
+      if (component.status !== "unloaded")
+        return;
+      resolve();
+    });
+  });
+};
+var parent_default = parent;
+
 // src/core/strategies/visible.js
 var visible = (component, requirement) => {
   return new Promise((resolve) => {
@@ -176,7 +207,8 @@ var idIndex = 1;
 var AsyncAlpine = (Alpine, opts = {}) => {
   const instance = {
     config: config_default,
-    cache: {}
+    components: [],
+    moduleCache: {}
   };
   if (opts.prefix)
     instance.config.prefix = opts.prefix;
@@ -189,6 +221,9 @@ var AsyncAlpine = (Alpine, opts = {}) => {
     return;
   for (let root of roots) {
     const component = new Component(root, instance, idIndex++);
+    instance.components.push(component);
+  }
+  for (let component of instance.components) {
     component.deactivate();
     const requirements = component.strategy.split("|").map((requirement) => requirement.trim()).filter((requirement) => requirement !== "immediate").filter((requirement) => requirement !== "eager");
     if (!requirements.length) {
@@ -211,6 +246,12 @@ var AsyncAlpine = (Alpine, opts = {}) => {
       }
       if (requirement === "event") {
         promises.push(event_default(component));
+      }
+      if (requirement === "parent" || requirement === "parents") {
+        for (let parentId of component.parents) {
+          let parent2 = instance.components.find((component2) => component2.id === parentId);
+          promises.push(parent_default(component, parent2.id, parent2.status));
+        }
       }
     }
     Promise.all(promises).then(() => {

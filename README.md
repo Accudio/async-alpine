@@ -251,9 +251,10 @@ AsyncAlpine(Alpine, {
 
 ### Available Options
 
-| Option Name   | property | Default | Notes |
-| ------------- | -------- | ------- | ----- |
-| Custom Prefix | `prefix` | `x-`    | If you set a [custom prefixes](https://github.com/alpinejs/alpine/discussions/2042#discussioncomment-1304957) for Alpine.js, set this here also |
+| Option Name          | property       | Default | Notes |
+| -------------------- | -------------- | ------- | ----- |
+| Custom Prefix        | `prefix`       | `ax-`   | Sets the prefix Async Alpine uses for attributes. Can be set to `data-ax-` to make markup HTML spec-compliant. Similar to `alpinePrefix` below. |
+| Custom Alpine Prefix | `alpinePrefix` | `x-`    | If you set a [custom prefixes](https://github.com/alpinejs/alpine/discussions/2042#discussioncomment-1304957) for Alpine.js, set this here also |
 
 ***
 

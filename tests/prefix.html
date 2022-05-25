@@ -9,8 +9,8 @@
 </head>
 <body>
   <div
-    ax-load
-    ax-load-src="/components/output.js"
+    data-ax-load
+    data-ax-load-src="/components/output.js"
     data-x-data="output('loaded')"
   ></div>
 
@@ -18,7 +18,8 @@
     import Alpine from 'https://cdn.skypack.dev/alpinejs';
     import AlpineAsync from '/dist/async-alpine.esm.js';
     AlpineAsync(Alpine, {
-      prefix: 'data-x-'
+      prefix: 'data-ax-',
+      alpinePrefix: 'data-x-'
     })
     Alpine.prefix('data-x-')
     Alpine.start()

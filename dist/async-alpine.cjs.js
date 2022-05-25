@@ -46,16 +46,16 @@ var Component = class {
   constructor(root, instance, index) {
     this.instance = instance;
     this.status = "unloaded";
-    this.src = root.getAttribute(this.instance.config.src);
-    this.strategy = root.getAttribute(this.instance.config.root) || this.instance.config.defaultStrategy;
+    this.src = root.getAttribute(this.instance.config.prefix + this.instance.config.src);
+    this.strategy = root.getAttribute(this.instance.config.prefix + this.instance.config.root) || this.instance.config.defaultStrategy;
     this.name = root.getAttribute(`${this.instance.config.alpine.prefix}data`).split("(")[0];
     this.id = root.id || this.instance.config.prefix + index;
     this.root = {
       node: root,
       attributes: getAlpineAttrs(root, this.instance.config)
     };
-    root.setAttribute(this.instance.config.id, this.id);
-    this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el, this.instance.config).length).filter((el) => !el.hasAttribute(this.instance.config.root)).filter((el) => el.closest(`[${this.instance.config.root}]`) === root).map((node) => ({
+    root.setAttribute(this.instance.config.id + this.instance.config.id, this.id);
+    this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el, this.instance.config).length).filter((el) => !el.hasAttribute(this.instance.config.prefix + this.instance.config.root)).filter((el) => el.closest(`[${this.instance.config.prefix}${this.instance.config.root}]`) === root).map((node) => ({
       node,
       attributes: getAlpineAttrs(node, this.instance.config)
     }));
@@ -160,9 +160,9 @@ var visible_default = visible;
 // src/core/config/index.js
 var config = {
   prefix: "ax-",
-  root: "ax-load",
-  src: "ax-load-src",
-  id: "ax-id",
+  root: "load",
+  src: "load-src",
+  id: "id",
   defaultStrategy: "immediate",
   alpine: {
     prefix: "x-",
@@ -174,17 +174,19 @@ var config_default = config;
 // src/core/async-alpine.js
 var idIndex = 1;
 var AsyncAlpine = (Alpine, opts = {}) => {
-  const roots = document.querySelectorAll(`[${config_default.root}]`);
-  if (!roots)
-    return;
   const instance = {
     config: config_default,
     cache: {}
   };
-  if (opts.prefix) {
-    instance.config.alpine.prefix = opts.prefix;
-    instance.config.alpine.attributes.push(opts.prefix);
+  if (opts.prefix)
+    instance.config.prefix = opts.prefix;
+  if (opts.alpinePrefix) {
+    instance.config.alpine.prefix = opts.alpinePrefix;
+    instance.config.alpine.attributes.push(opts.alpinePrefix);
   }
+  const roots = document.querySelectorAll(`[${config_default.prefix}${config_default.root}]`);
+  if (!roots)
+    return;
   for (let root of roots) {
     const component = new Component(root, instance, idIndex++);
     component.deactivate();

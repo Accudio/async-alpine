@@ -6,21 +6,22 @@ import config from './config/index.js';
 let idIndex = 1;
 
 const AsyncAlpine = (Alpine, opts = {}) => {
-  // get ell elements in the DOM with `x-load` attribute
-  const roots = document.querySelectorAll(`[${config.root}]`);
-  if (!roots) return;
-
   // instance of AsyncAlpine
   const instance = {
     config,
     cache: {},
   };
 
-  // if a prefix has been passed in from `opt`, update config
-  if (opts.prefix) {
-    instance.config.alpine.prefix = opts.prefix;
-    instance.config.alpine.attributes.push(opts.prefix);
+  // if a prefix or AlpinePrefix has been passed in from `opt`, update config
+  if (opts.prefix) instance.config.prefix = opts.prefix;
+  if (opts.alpinePrefix) {
+    instance.config.alpine.prefix = opts.alpinePrefix;
+    instance.config.alpine.attributes.push(opts.alpinePrefix);
   }
+
+  // get ell elements in the DOM with `x-load` attribute
+  const roots = document.querySelectorAll(`[${config.prefix}${config.root}]`);
+  if (!roots) return;
 
   // for each root, get the loading strategy and any alpine elements controlled by this component
   for (let root of roots) {

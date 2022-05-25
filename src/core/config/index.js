@@ -1,12 +1,12 @@
 const config = {
   prefix: 'ax-',
-  root: 'ax-load',
-  src: 'ax-load-src',
-  id: 'ax-id',
+  root: 'load',
+  src: 'load-src',
+  id: 'id',
   defaultStrategy: 'immediate',
   alpine: {
     prefix: 'x-',
-    attributes: [ 'x-', ':', '@' ]
+    attributes: [ 'x-', ':', '@' ],
   },
 };
 

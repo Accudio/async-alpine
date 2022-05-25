@@ -3,6 +3,7 @@ const http = require('http');
 const fs = require('fs-extra');
 const chokidar = require('chokidar');
 
+fs.copySync('dist', 'tests/dist')
 chokidar.watch([ 'dist/*.js' ]).on('change', async () => {
   // copy dist over
   fs.copySync('dist', 'tests/dist')

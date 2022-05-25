@@ -4,8 +4,10 @@ const Component = class {
   constructor(root, instance, index) {
     this.instance = instance;
     this.status = 'unloaded';
-    this.src = root.getAttribute(this.instance.config.src);
-    this.strategy = root.getAttribute(this.instance.config.root) || this.instance.config.defaultStrategy;
+    this.src = root.getAttribute(this.instance.config.prefix + this.instance.config.src);
+    this.strategy =
+      root.getAttribute(this.instance.config.prefix + this.instance.config.root)
+      || this.instance.config.defaultStrategy;
     this.name = root.getAttribute(`${this.instance.config.alpine.prefix}data`).split('(')[0];
     this.id = root.id || (this.instance.config.prefix + index);
     this.root = {
@@ -14,16 +16,16 @@ const Component = class {
     };
 
     // set id attribute if not already
-    root.setAttribute(this.instance.config.id, this.id);
+    root.setAttribute(this.instance.config.prefix + this.instance.config.id, this.id);
 
     // get children of this component
     this.children = [ ...root.querySelectorAll('*') ]
       // filter out only elements with alpine attributes
       .filter(el => getAlpineAttrs(el, this.instance.config).length)
       // remove any items with `config.root` since they'll manage themselves
-      .filter(el => !el.hasAttribute(this.instance.config.root))
+      .filter(el => !el.hasAttribute(this.instance.config.prefix + this.instance.config.root))
       // only get elements directly controlled by this component
-      .filter(el => el.closest(`[${this.instance.config.root}]`) === root)
+      .filter(el => el.closest(`[${this.instance.config.prefix}${this.instance.config.root}]`) === root)
       // restructure to include attribute names too
       .map(node => ({
         node,
@@ -34,7 +36,7 @@ const Component = class {
     this.parents = [];
     let cursor = root;
     do {
-      cursor = cursor.parentNode.closest(`[${this.instance.config.root}]`);
+      cursor = cursor.parentNode.closest(`[${this.instance.config.prefix}${this.instance.config.root}]`);
       if (!cursor) break;
       const parent = instance.components.find(component => component.root.node === cursor);
       this.parents.push(parent.id);
@@ -92,9 +94,9 @@ const Component = class {
     }
 
     // remove cloak
-    this.root.node.removeAttribute(`${this.instance.config.prefix}cloak`);
+    this.root.node.removeAttribute(`${this.instance.config.alpine.prefix}cloak`);
     for (let child of this.children) {
-      child.node.removeAttribute(`${this.instance.config.prefix}cloak`);
+      child.node.removeAttribute(`${this.instance.config.alpine.prefix}cloak`);
     }
 
     // update status

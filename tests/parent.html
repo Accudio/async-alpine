@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <title>Parent - Async Alpine tests</title>
+</head>
+<body>
+  <button
+    x-data
+    @click="$dispatch('async-alpine:load', { id: 'parent-component' })"
+  >
+    Load
+  </button>
+
+  <div
+    id="parent-component"
+    ax-load="event"
+    ax-load-src="/components/alert.js"
+    x-data="alert('parent loaded')"
+  >
+    <div
+      ax-load="parent"
+      ax-load-src="/components/alert.js"
+      x-data="alert('child loaded')"
+    ></div>
+  </div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AlpineAsync from '/dist/async-alpine.esm.js';
+    AlpineAsync(Alpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

@@ -6,10 +6,6 @@ import config from './config/index.js';
 let idIndex = 1;
 
 const AsyncAlpine = (Alpine, opts = {}) => {
-  // get ell elements in the DOM with `x-load` attribute
-  const roots = document.querySelectorAll(`[${config.root}]`);
-  if (!roots) return;
-
   // instance of AsyncAlpine
   const instance = {
     config,
@@ -17,13 +13,18 @@ const AsyncAlpine = (Alpine, opts = {}) => {
     moduleCache: {},
   };
 
-  // if a prefix has been passed in from `opt`, update config
-  if (opts.prefix) {
-    instance.config.alpine.prefix = opts.prefix;
-    instance.config.alpine.attributes.push(opts.prefix);
+  // if a prefix or AlpinePrefix has been passed in from `opt`, update config
+  if (opts.prefix) instance.config.prefix = opts.prefix;
+  if (opts.alpinePrefix) {
+    instance.config.alpine.prefix = opts.alpinePrefix;
+    instance.config.alpine.attributes.push(opts.alpinePrefix);
   }
 
-  // for each root, generate a component
+  // get ell elements in the DOM with `ax-load` attribute
+  const roots = document.querySelectorAll(`[${config.prefix}${config.root}]`);
+  if (!roots) return;
+
+  // for each root, get the loading strategy and any alpine elements controlled by this component
   for (let root of roots) {
     const component = new Component(root, instance, idIndex++);
     instance.components.push(component);
@@ -83,9 +84,9 @@ const AsyncAlpine = (Alpine, opts = {}) => {
       }
 
       // parents
-      if (requirement === 'parents') {
+      if (requirement === 'parent' || requirement === 'parents') {
         for (let parentId of component.parents) {
-          let parent = instance.components.find(component => component.id === parentId)
+          let parent = instance.components.find(component => component.id === parentId);
           promises.push(
             strategies.parent(
               component,

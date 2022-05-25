@@ -18,18 +18,21 @@
     "import": "./dist/async-alpine.esm.js",
     "default": "./dist/async-alpine.esm.js"
   },
-  "files": [ "dist" ],
-  "dependencies": {},
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
-    "@skypack/package-check": "^0.2.2",
+    "alpinejs": "^3.10.2",
     "chokidar": "^3.5.2",
     "esbuild": "^0.13.15",
-    "eslint": "^8.3.0"
+    "eslint": "^8.3.0",
+    "fs-extra": "^10.1.0",
+    "serve-handler": "^6.1.3"
   },
   "scripts": {
     "develop": "node ./scripts/develop.js",
     "build": "node ./scripts/build.js",
     "lint": "eslint src",
-    "test": "package-check"
+    "test": "node test.js"
   }
 }

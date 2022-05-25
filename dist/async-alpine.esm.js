@@ -33,23 +33,23 @@ var Component = class {
   constructor(root, instance, index) {
     this.instance = instance;
     this.status = "unloaded";
-    this.src = root.getAttribute(this.instance.config.src);
-    this.strategy = root.getAttribute(this.instance.config.root) || this.instance.config.defaultStrategy;
+    this.src = root.getAttribute(this.instance.config.prefix + this.instance.config.src);
+    this.strategy = root.getAttribute(this.instance.config.prefix + this.instance.config.root) || this.instance.config.defaultStrategy;
     this.name = root.getAttribute(`${this.instance.config.alpine.prefix}data`).split("(")[0];
     this.id = root.id || this.instance.config.prefix + index;
     this.root = {
       node: root,
       attributes: getAlpineAttrs(root, this.instance.config)
     };
-    root.setAttribute(this.instance.config.id, this.id);
-    this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el, this.instance.config).length).filter((el) => !el.hasAttribute(this.instance.config.root)).filter((el) => el.closest(`[${this.instance.config.root}]`) === root).map((node) => ({
+    root.setAttribute(this.instance.config.prefix + this.instance.config.id, this.id);
+    this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el, this.instance.config).length).filter((el) => !el.hasAttribute(this.instance.config.prefix + this.instance.config.root)).filter((el) => el.closest(`[${this.instance.config.prefix}${this.instance.config.root}]`) === root).map((node) => ({
       node,
       attributes: getAlpineAttrs(node, this.instance.config)
     }));
     this.parents = [];
     let cursor = root;
     do {
-      cursor = cursor.parentNode.closest(`[${this.instance.config.root}]`);
+      cursor = cursor.parentNode.closest(`[${this.instance.config.prefix}${this.instance.config.root}]`);
       if (!cursor)
         break;
       const parent2 = instance.components.find((component) => component.root.node === cursor);
@@ -85,9 +85,9 @@ var Component = class {
     for (let child of this.children) {
       enableAttributes(child, this.instance.config);
     }
-    this.root.node.removeAttribute(`${this.instance.config.prefix}cloak`);
+    this.root.node.removeAttribute(`${this.instance.config.alpine.prefix}cloak`);
     for (let child of this.children) {
-      child.node.removeAttribute(`${this.instance.config.prefix}cloak`);
+      child.node.removeAttribute(`${this.instance.config.alpine.prefix}cloak`);
     }
     this.status = "loaded";
     window.dispatchEvent(new CustomEvent("async-alpine:loaded", {
@@ -140,10 +140,13 @@ var media = (component, requirement) => {
 var media_default = media;
 
 // src/core/strategies/parent.js
-var parent = (component, parent2) => {
+var parent = (component, parentId, parentStatus) => {
   return new Promise((resolve) => {
+    if (parentStatus !== "unloaded") {
+      return resolve();
+    }
     window.addEventListener("async-alpine:loaded", (e) => {
-      if (e.detail.id !== parent2)
+      if (e.detail.id !== parentId)
         return;
       if (component.status !== "unloaded")
         return;
@@ -175,9 +178,9 @@ var visible_default = visible;
 // src/core/config/index.js
 var config = {
   prefix: "ax-",
-  root: "ax-load",
-  src: "ax-load-src",
-  id: "ax-id",
+  root: "load",
+  src: "load-src",
+  id: "id",
   defaultStrategy: "immediate",
   alpine: {
     prefix: "x-",
@@ -189,18 +192,20 @@ var config_default = config;
 // src/core/async-alpine.js
 var idIndex = 1;
 var AsyncAlpine = (Alpine, opts = {}) => {
-  const roots = document.querySelectorAll(`[${config_default.root}]`);
-  if (!roots)
-    return;
   const instance = {
     config: config_default,
     components: [],
     moduleCache: {}
   };
-  if (opts.prefix) {
-    instance.config.alpine.prefix = opts.prefix;
-    instance.config.alpine.attributes.push(opts.prefix);
+  if (opts.prefix)
+    instance.config.prefix = opts.prefix;
+  if (opts.alpinePrefix) {
+    instance.config.alpine.prefix = opts.alpinePrefix;
+    instance.config.alpine.attributes.push(opts.alpinePrefix);
   }
+  const roots = document.querySelectorAll(`[${config_default.prefix}${config_default.root}]`);
+  if (!roots)
+    return;
   for (let root of roots) {
     const component = new Component(root, instance, idIndex++);
     instance.components.push(component);
@@ -229,9 +234,10 @@ var AsyncAlpine = (Alpine, opts = {}) => {
       if (requirement === "event") {
         promises.push(event_default(component));
       }
-      if (requirement === "parents") {
+      if (requirement === "parent" || requirement === "parents") {
         for (let parentId of component.parents) {
-          promises.push(parent_default(component, parentId));
+          let parent2 = instance.components.find((component2) => component2.id === parentId);
+          promises.push(parent_default(component, parent2.id, parent2.status));
         }
       }
     }

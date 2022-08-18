@@ -11,113 +11,11 @@ __export(exports, {
   default: () => AsyncAlpine
 });
 
-// src/core/attributes.js
-var getAlpineAttrs = (el, config2) => {
-  return [...el.attributes].map((el2) => el2.name).filter((attr) => {
-    for (let prefix of config2.alpine.attributes) {
-      if (attr.startsWith(prefix))
-        return true;
-    }
-    return false;
-  }).filter((attr) => attr !== `${config2.alpine.prefix}cloak`);
-};
-var disableAttributes = (el, config2) => {
-  for (let attribute of el.attributes) {
-    el.node.setAttribute(config2.prefix + sanitiseAttribute(attribute), el.node.getAttribute(attribute));
-    el.node.removeAttribute(attribute);
-  }
-};
-var enableAttributes = (el, config2) => {
-  for (let attribute of el.attributes) {
-    const sanitisedAttr = sanitiseAttribute(attribute);
-    el.node.setAttribute(sanitisedAttr, el.node.getAttribute(config2.prefix + sanitisedAttr));
-    el.node.removeAttribute(config2.prefix + sanitisedAttr);
-  }
-};
-var sanitiseAttribute = (attribute) => {
-  if (attribute.startsWith("@")) {
-    return "x-on:" + attribute.slice(1);
-  }
-  return attribute;
-};
-
-// src/core/component.js
-var Component = class {
-  constructor(root, instance, index) {
-    this.instance = instance;
-    this.status = "unloaded";
-    this.src = root.getAttribute(this.instance.config.prefix + this.instance.config.src);
-    this.strategy = root.getAttribute(this.instance.config.prefix + this.instance.config.root) || this.instance.config.defaultStrategy;
-    this.name = root.getAttribute(`${this.instance.config.alpine.prefix}data`).split("(")[0];
-    this.id = root.id || this.instance.config.prefix + index;
-    this.root = {
-      node: root,
-      attributes: getAlpineAttrs(root, this.instance.config)
-    };
-    root.setAttribute(this.instance.config.prefix + this.instance.config.id, this.id);
-    this.children = [...root.querySelectorAll("*")].filter((el) => getAlpineAttrs(el, this.instance.config).length).filter((el) => !el.hasAttribute(this.instance.config.prefix + this.instance.config.root)).filter((el) => el.closest(`[${this.instance.config.prefix}${this.instance.config.root}]`) === root).map((node) => ({
-      node,
-      attributes: getAlpineAttrs(node, this.instance.config)
-    }));
-    this.parents = [];
-    let cursor = root;
-    do {
-      cursor = cursor.parentNode.closest(`[${this.instance.config.prefix}${this.instance.config.root}]`);
-      if (!cursor)
-        break;
-      const parent2 = instance.components.find((component) => component.root.node === cursor);
-      this.parents.push(parent2.id);
-    } while (cursor);
-  }
-  deactivate() {
-    disableAttributes(this.root, this.instance.config);
-    for (let child of this.children) {
-      disableAttributes(child, this.instance.config);
-    }
-  }
-  async download(Alpine) {
-    this.status = "loading";
-    const module2 = await this.getModule();
-    Alpine.data(this.name, module2);
-    this.activate();
-  }
-  async getModule() {
-    if (this.instance.moduleCache[this.src]) {
-      return this.instance.moduleCache[this.src];
-    }
-    const module2 = await import(
-      /* webpackIgnore: true */
-      this.src
-    );
-    let whichExport = module2[this.name] || module2.default || Object.values(module2)[0] || false;
-    this.instance.moduleCache[this.src] = whichExport;
-    return whichExport;
-  }
-  activate() {
-    enableAttributes(this.root, this.instance.config);
-    for (let child of this.children) {
-      enableAttributes(child, this.instance.config);
-    }
-    this.root.node.removeAttribute(`${this.instance.config.alpine.prefix}cloak`);
-    for (let child of this.children) {
-      child.node.removeAttribute(`${this.instance.config.alpine.prefix}cloak`);
-    }
-    this.status = "loaded";
-    window.dispatchEvent(new CustomEvent("async-alpine:loaded", {
-      detail: {
-        id: this.id
-      }
-    }));
-  }
-};
-
 // src/core/strategies/event.js
 var event = (component) => {
   return new Promise((resolve) => {
     window.addEventListener("async-alpine:load", (e) => {
       if (e.detail.id !== component.id)
-        return;
-      if (component.status !== "unloaded")
         return;
       resolve();
     });
@@ -138,7 +36,7 @@ var idle = () => {
 var idle_default = idle;
 
 // src/core/strategies/media.js
-var media = (component, requirement) => {
+var media = (requirement) => {
   return new Promise((resolve) => {
     const queryStart = requirement.indexOf("(");
     const query = requirement.slice(queryStart);
@@ -151,23 +49,6 @@ var media = (component, requirement) => {
   });
 };
 var media_default = media;
-
-// src/core/strategies/parent.js
-var parent = (component, parentId, parentStatus) => {
-  return new Promise((resolve) => {
-    if (parentStatus !== "unloaded") {
-      return resolve();
-    }
-    window.addEventListener("async-alpine:loaded", (e) => {
-      if (e.detail.id !== parentId)
-        return;
-      if (component.status !== "unloaded")
-        return;
-      resolve();
-    });
-  });
-};
-var parent_default = parent;
 
 // src/core/strategies/visible.js
 var visible = (component, requirement) => {
@@ -183,52 +64,102 @@ var visible = (component, requirement) => {
         resolve();
       }
     }, { rootMargin });
-    observer.observe(component.root.node);
+    observer.observe(component.el);
   });
 };
 var visible_default = visible;
 
-// src/core/config/index.js
-var config = {
-  prefix: "ax-",
-  root: "load",
-  src: "load-src",
-  id: "id",
-  defaultStrategy: "immediate",
-  alpine: {
-    prefix: "x-",
-    attributes: ["x-", ":", "@"]
-  }
-};
-var config_default = config;
-
 // src/core/async-alpine.js
-var idIndex = 1;
-var AsyncAlpine = (Alpine, opts = {}) => {
-  const instance = {
-    config: config_default,
-    components: [],
-    moduleCache: {}
-  };
-  if (opts.prefix)
-    instance.config.prefix = opts.prefix;
-  if (opts.alpinePrefix) {
-    instance.config.alpine.prefix = opts.alpinePrefix;
-    instance.config.alpine.attributes.push(opts.alpinePrefix);
-  }
-  const roots = document.querySelectorAll(`[${config_default.prefix}${config_default.root}]`);
-  if (!roots)
-    return;
-  for (let root of roots) {
-    const component = new Component(root, instance, idIndex++);
-    instance.components.push(component);
-  }
-  for (let component of instance.components) {
-    component.deactivate();
+var AsyncAlpine = {
+  Alpine: null,
+  _options: {
+    prefix: "ax-",
+    alpinePrefix: "x-",
+    root: "load",
+    inline: "load-src",
+    defaultStrategy: "immediate"
+  },
+  _data: {},
+  _realIndex: -1,
+  get _index() {
+    return this._realIndex++;
+  },
+  init(Alpine, opts = {}) {
+    this.Alpine = Alpine;
+    this._options = {
+      ...this._options,
+      ...opts
+    };
+    return this;
+  },
+  start() {
+    this._processInline();
+    this._setupComponents();
+    this._mutations();
+    return this;
+  },
+  data(name, download = false) {
+    this._data[name] = {
+      loaded: false,
+      download
+    };
+    const ignoreAttr = `${this._options.alpinePrefix}ignore`;
+    this.Alpine.data(name, () => ({
+      init() {
+        this.$root.setAttribute(ignoreAttr, "");
+      }
+    }));
+    return this;
+  },
+  inline(name) {
+    this.data(name);
+    return this;
+  },
+  _processInline() {
+    const inlineComponents = document.querySelectorAll(`[${this._options.prefix}${this._options.inline}]`);
+    for (const component of inlineComponents) {
+      this._inlineElement(component);
+    }
+  },
+  _inlineElement(component) {
+    const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
+    const srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
+    if (!xData || !srcUrl)
+      return;
+    const name = this._parseName(xData);
+    if (!this._data[name])
+      return;
+    component.removeAttribute(`[${this._options.prefix}${this._options.inline}]`);
+    this._data[name].download = () => import(
+      /* webpackIgnore: true */
+      srcUrl
+    );
+  },
+  _setupComponents() {
+    const components = document.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
+    for (let component of components) {
+      this._setupComponent(component);
+    }
+  },
+  _setupComponent(component) {
+    const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
+    if (!xData)
+      return;
+    const name = this._parseName(xData);
+    const strategy = component.getAttribute(`${this._options.prefix}${this._options.root}`) || this._options.defaultStrategy;
+    this._componentStrategy({
+      name,
+      strategy,
+      el: component,
+      id: component.id || this._index
+    });
+  },
+  async _componentStrategy(component) {
     const requirements = component.strategy.split("|").map((requirement) => requirement.trim()).filter((requirement) => requirement !== "immediate").filter((requirement) => requirement !== "eager");
     if (!requirements.length) {
-      component.download(Alpine);
-      continue;
+      await this._download(component.name);
+      this._activate(component);
+      return;
     }
     let promises = [];
     for (let requirement of requirements) {
@@ -241,21 +172,66 @@ var AsyncAlpine = (Alpine, opts = {}) => {
         continue;
       }
       if (requirement.startsWith("media")) {
-        promises.push(media_default(component, requirement));
+        promises.push(media_default(requirement));
         continue;
       }
       if (requirement === "event") {
         promises.push(event_default(component));
       }
-      if (requirement === "parent" || requirement === "parents") {
-        for (let parentId of component.parents) {
-          let parent2 = instance.components.find((component2) => component2.id === parentId);
-          promises.push(parent_default(component, parent2.id, parent2.status));
+    }
+    Promise.all(promises).then(async () => {
+      await this._download(component.name);
+      this._activate(component);
+    });
+  },
+  async _download(name) {
+    if (this._data[name].loaded)
+      return;
+    const module2 = await this._getModule(name);
+    this.Alpine.data(name, module2);
+    this._data[name].loaded = true;
+  },
+  async _getModule(name) {
+    if (!this._data[name])
+      return;
+    const module2 = await this._data[name].download();
+    let whichExport = module2[name] || module2.default || Object.values(module2)[0] || false;
+    return whichExport;
+  },
+  _activate(component) {
+    component.el.removeAttribute(`${this._options.prefix}${this._options.root}`);
+    const xDataAttr = `${this._options.alpinePrefix}data`;
+    const xData = component.el.getAttribute(xDataAttr);
+    component.el.removeAttribute(xDataAttr);
+    setTimeout(() => {
+      component.el.setAttribute(xDataAttr, xData);
+      component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
+    }, 1);
+  },
+  _mutations() {
+    const observer = new MutationObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.addedNodes)
+          continue;
+        for (const node of entry.addedNodes) {
+          if (node.nodeType !== 1)
+            continue;
+          if (!node.hasAttribute(`${this._options.prefix}${this._options.root}`))
+            continue;
+          if (node.hasAttribute(`${this._options.prefix}${this._options.inline}`)) {
+            this._inlineElement(node);
+          }
+          this._setupComponent(node);
         }
       }
-    }
-    Promise.all(promises).then(() => {
-      component.download(Alpine);
     });
+    observer.observe(document.body, {
+      attributes: true,
+      childList: true,
+      subtree: true
+    });
+  },
+  _parseName(attribute) {
+    return attribute.split("(")[0];
   }
 };

@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <link rel="stylesheet" type="text/css" href="styles.css">
   <title>Idle - Async Alpine tests</title>
 </head>
 <body>
@@ -16,8 +15,10 @@
 
   <script type="module">
     import Alpine from 'https://cdn.skypack.dev/alpinejs';
-    import AlpineAsync from '/dist/async-alpine.esm.js';
-    AlpineAsync(Alpine)
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    AsyncAlpine.init(Alpine)
+    AsyncAlpine.inline('output')
+    AsyncAlpine.start()
     Alpine.start()
   </script>
 </body>

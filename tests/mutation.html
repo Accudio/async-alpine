@@ -9,17 +9,20 @@
 <body>
   <button
     x-data
-    @click="$dispatch('async-alpine:load', { id: 'my-component' })"
+    @click="() => {
+      document.getElementById('result').innerHTML = `
+      <div
+        ax-load
+        ax-load-src='/components/output.js'
+        x-data='output'
+      ></div>
+      `
+    }"
   >
     Load
   </button>
 
-  <div
-    id="my-component"
-    ax-load="event"
-    ax-load-src="/components/output.js"
-    x-data="output('loaded')"
-  ></div>
+  <div id="result"></div>
 
   <script type="module">
     import Alpine from 'https://cdn.skypack.dev/alpinejs';

@@ -4,20 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <title>Event - Async Alpine tests</title>
+  <title>Dynamic - Async Alpine tests</title>
 </head>
 <body>
-  <button
-    x-data
-    @click="$dispatch('async-alpine:load', { id: 'my-component' })"
-  >
-    Load
-  </button>
-
   <div
-    id="my-component"
-    ax-load="event"
-    ax-load-src="/components/output.js"
+    ax-load
     x-data="output('loaded')"
   ></div>
 
@@ -25,7 +16,7 @@
     import Alpine from 'https://cdn.skypack.dev/alpinejs';
     import AsyncAlpine from '/dist/async-alpine.esm.js';
     AsyncAlpine.init(Alpine)
-    AsyncAlpine.inline('output')
+    AsyncAlpine.data('output', () => import('/components/output.js'))
     AsyncAlpine.start()
     Alpine.start()
   </script>

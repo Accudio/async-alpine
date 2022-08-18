@@ -1,4 +1,4 @@
-const media = (component, requirement) => {
+const media = requirement => {
   return new Promise(resolve => {
     const queryStart = requirement.indexOf('(');
     const query = requirement.slice(queryStart);

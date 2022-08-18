@@ -4,28 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <link rel="stylesheet" type="text/css" href="styles.css">
   <title>Visible - Async Alpine tests</title>
 </head>
 <body>
   <div
     style="margin-top: 200vh;"
     ax-load="visible"
-    ax-load-src="/components/alert.js"
-    x-data="alert('loaded with default rootMargin')"
+    ax-load-src="/components/custom-alert.js"
+    x-data="customAlert('loaded with default rootMargin')"
   >Default rootMargin</div>
 
   <div
     style="margin-top: 100vh;"
     ax-load="visible (400px)"
-    ax-load-src="/components/alert.js"
-    x-data="alert('loaded with custom rootMargin')"
+    ax-load-src="/components/custom-alert.js"
+    x-data="customAlert('loaded with custom rootMargin')"
   >Custom rootMargin</div>
 
   <script type="module">
     import Alpine from 'https://cdn.skypack.dev/alpinejs';
-    import AlpineAsync from '/dist/async-alpine.esm.js';
-    AlpineAsync(Alpine)
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    AsyncAlpine.init(Alpine)
+    AsyncAlpine.inline('customAlert')
+    AsyncAlpine.start()
     Alpine.start()
   </script>
 </body>

@@ -13,7 +13,7 @@ const visible = (component, requirement) => {
         resolve();
       }
     }, { rootMargin });
-    observer.observe(component.root.node);
+    observer.observe(component.el);
   });
 };
 

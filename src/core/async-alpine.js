@@ -55,13 +55,6 @@ const AsyncAlpine = {
       loaded: false,
       download,
     };
-
-    const ignoreAttr = `${this._options.alpinePrefix}ignore`;
-    this.Alpine.data(name, () => ({
-      init() {
-        this.$root.setAttribute(ignoreAttr, '');
-      },
-    }));
     return this;
   },
 
@@ -86,12 +79,16 @@ const AsyncAlpine = {
 
   // process element to add the download function for this component
   _inlineElement(component) {
-    const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
+    const xData = component.getAttribute(`${this._options.prefix}data`);
     const srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
     if (!xData || !srcUrl) return;
 
     const name = this._parseName(xData);
     if (!this._data[name]) return;
+
+    component.setAttribute(`${this._options.alpinePrefix}ignore`, "");
+    component.setAttribute(`${this._options.alpinePrefix}data`, xData);
+    component.removeAttribute(`${this._options.prefix}data`);
 
     component.removeAttribute(`[${this._options.prefix}${this._options.inline}]`);
     this._data[name].download = () => import(
@@ -115,11 +112,15 @@ const AsyncAlpine = {
 
   // set this element up as a component
   _setupComponent(component) {
-    const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
+    const xData = component.getAttribute(`${this._options.prefix}data`);
     if (!xData) return;
 
     const name = this._parseName(xData);
     const strategy = component.getAttribute(`${this._options.prefix}${this._options.root}`) || this._options.defaultStrategy;
+
+    component.setAttribute(`${this._options.alpinePrefix}ignore`, "");
+    component.setAttribute(`${this._options.alpinePrefix}data`, xData);
+    component.removeAttribute(`${this._options.prefix}data`);
 
     this._componentStrategy({
       name,
@@ -226,9 +227,10 @@ const AsyncAlpine = {
     const xDataAttr = `${this._options.alpinePrefix}data`;
     const xData = component.el.getAttribute(xDataAttr);
     component.el.removeAttribute(xDataAttr);
+    component.el.setAttribute(xDataAttr, xData);
+    component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
     setTimeout(() => {
-      component.el.setAttribute(xDataAttr, xData);
-      component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
+      this.Alpine.initTree(component.el);
     }, 1);
   },
 

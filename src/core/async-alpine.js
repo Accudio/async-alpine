@@ -58,12 +58,6 @@ const AsyncAlpine = {
     return this;
   },
 
-  // declare the name of an inline component, we can add the download function later
-  inline(name) {
-    this.data(name);
-    return this;
-  },
-
   /**
    * =================================
    * process inline components
@@ -84,8 +78,7 @@ const AsyncAlpine = {
     if (!xData || !srcUrl) return;
 
     const name = this._parseName(xData);
-    if (!this._data[name]) return;
-
+    if (!this._data[name]) this.data(name);
     this._data[name].download = () => import(
       /* webpackIgnore: true */
       srcUrl

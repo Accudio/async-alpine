@@ -67,8 +67,6 @@ var AsyncAlpine = {
     defaultStrategy: "immediate"
   },
   _data: {},
-  _alpineInit: false,
-  _registrationBuffer: [],
   _realIndex: -1,
   get _index() {
     return this._realIndex++;
@@ -94,10 +92,6 @@ var AsyncAlpine = {
     };
     return this;
   },
-  inline(name) {
-    this.data(name);
-    return this;
-  },
   _processInline() {
     const inlineComponents = document.querySelectorAll(`[${this._options.prefix}${this._options.inline}]`);
     for (const component of inlineComponents) {
@@ -111,7 +105,7 @@ var AsyncAlpine = {
       return;
     const name = this._parseName(xData);
     if (!this._data[name])
-      return;
+      this.data(name);
     this._data[name].download = () => import(
       /* webpackIgnore: true */
       srcUrl

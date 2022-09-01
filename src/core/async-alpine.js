@@ -55,13 +55,6 @@ const AsyncAlpine = {
       loaded: false,
       download,
     };
-
-    const ignoreAttr = `${this._options.alpinePrefix}ignore`;
-    this.Alpine.data(name, () => ({
-      init() {
-        this.$root.setAttribute(ignoreAttr, '');
-      },
-    }));
     return this;
   },
 
@@ -93,7 +86,6 @@ const AsyncAlpine = {
     const name = this._parseName(xData);
     if (!this._data[name]) return;
 
-    component.removeAttribute(`[${this._options.prefix}${this._options.inline}]`);
     this._data[name].download = () => import(
       /* webpackIgnore: true */
       srcUrl
@@ -117,6 +109,8 @@ const AsyncAlpine = {
   _setupComponent(component) {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
     if (!xData) return;
+
+    component.setAttribute(`${this._options.alpinePrefix}ignore`, '');
 
     const name = this._parseName(xData);
     const strategy = component.getAttribute(`${this._options.prefix}${this._options.root}`) || this._options.defaultStrategy;
@@ -194,8 +188,8 @@ const AsyncAlpine = {
   // check if the component has been downloaded, if not trigger download and register with Alpine
   async _download(name) {
     if (this._data[name].loaded) return;
-    const module = await this._getModule(name);
-    this.Alpine.data(name, module);
+    const moduleExport = await this._getModule(name);
+    this.Alpine.data(name, moduleExport);
     this._data[name].loaded = true;
   },
 
@@ -215,21 +209,14 @@ const AsyncAlpine = {
    * =================================
    * component activation
    * =================================
-   * first remove ax-load from the element to mark it as processed
-   * get the content of x-data and remove the attribute
-   * re-add it in a microtask to trigger an Alpine re-scan
-   * remove x-ignore so Alpine activates it
+   * remove x-ignore attribute and the _x_ignore data property
+   * them force Alpine to re-scan the tree
    */
   _activate(component) {
-    component.el.removeAttribute(`${this._options.prefix}${this._options.root}`);
-
-    const xDataAttr = `${this._options.alpinePrefix}data`;
-    const xData = component.el.getAttribute(xDataAttr);
-    component.el.removeAttribute(xDataAttr);
-    setTimeout(() => {
-      component.el.setAttribute(xDataAttr, xData);
-      component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
-    }, 1);
+    component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
+    // eslint-disable-next-line camelcase
+    component.el._x_ignore = false;
+    this.Alpine.initTree(component.el);
   },
 
   /**

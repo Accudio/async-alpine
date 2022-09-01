@@ -67,6 +67,8 @@ var AsyncAlpine = {
     defaultStrategy: "immediate"
   },
   _data: {},
+  _alpineInit: false,
+  _registrationBuffer: [],
   _realIndex: -1,
   get _index() {
     return this._realIndex++;
@@ -90,12 +92,6 @@ var AsyncAlpine = {
       loaded: false,
       download
     };
-    const ignoreAttr = `${this._options.alpinePrefix}ignore`;
-    this.Alpine.data(name, () => ({
-      init() {
-        this.$root.setAttribute(ignoreAttr, "");
-      }
-    }));
     return this;
   },
   inline(name) {
@@ -116,7 +112,6 @@ var AsyncAlpine = {
     const name = this._parseName(xData);
     if (!this._data[name])
       return;
-    component.removeAttribute(`[${this._options.prefix}${this._options.inline}]`);
     this._data[name].download = () => import(
       /* webpackIgnore: true */
       srcUrl
@@ -132,6 +127,7 @@ var AsyncAlpine = {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
     if (!xData)
       return;
+    component.setAttribute(`${this._options.alpinePrefix}ignore`, "");
     const name = this._parseName(xData);
     const strategy = component.getAttribute(`${this._options.prefix}${this._options.root}`) || this._options.defaultStrategy;
     this._componentStrategy({
@@ -174,8 +170,8 @@ var AsyncAlpine = {
   async _download(name) {
     if (this._data[name].loaded)
       return;
-    const module = await this._getModule(name);
-    this.Alpine.data(name, module);
+    const moduleExport = await this._getModule(name);
+    this.Alpine.data(name, moduleExport);
     this._data[name].loaded = true;
   },
   async _getModule(name) {
@@ -186,14 +182,9 @@ var AsyncAlpine = {
     return whichExport;
   },
   _activate(component) {
-    component.el.removeAttribute(`${this._options.prefix}${this._options.root}`);
-    const xDataAttr = `${this._options.alpinePrefix}data`;
-    const xData = component.el.getAttribute(xDataAttr);
-    component.el.removeAttribute(xDataAttr);
-    setTimeout(() => {
-      component.el.setAttribute(xDataAttr, xData);
-      component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
-    }, 1);
+    component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
+    component.el._x_ignore = false;
+    this.Alpine.initTree(component.el);
   },
   _mutations() {
     const observer = new MutationObserver((entries) => {

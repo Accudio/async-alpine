@@ -4,26 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <title>Event - Async Alpine tests</title>
+  <title>Media - Async Alpine tests</title>
 </head>
 <body>
-  <button
-    x-data
-    @click="() => {
-      document.getElementById('result').innerHTML = `
-      <div
-        ax-load
-        ax-load-src='/components/output.js'
-        x-data='output'
-        x-ignore
-      ></div>
-      `
-    }"
-  >
-    Load
-  </button>
+  <div
+    ax-load="media (max-width: 820px)"
+    ax-load-src="/components/output.js"
+    x-data="output('loaded (max-width: 820px)')"
+    x-ignore
+  ></div>
 
-  <div id="result"></div>
+  <div
+    ax-load="media (prefers-reduced-motion: reduce)"
+    ax-load-src="/components/output.js"
+    x-data="output('loaded (prefers-reduced-motion: reduce)')"
+    x-ignore
+  ></div>
 
   <script type="module">
     import Alpine from 'https://cdn.skypack.dev/alpinejs';

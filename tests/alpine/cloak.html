@@ -4,22 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <title>Dynamic - Async Alpine tests</title>
+  <title>x-cloak - Async Alpine tests</title>
+  <style>
+    [x-cloak] {
+      visibility: hidden;
+    }
+  </style>
 </head>
 <body>
   <div
     ax-load
-    x-data="output('loaded')"
+    ax-load-src="/components/complex.js"
+    x-data="complex"
     x-ignore
-  ></div>
+    x-cloak
+  >
+    Cloaked
+  </div>
 
   <script type="module">
     import Alpine from 'https://cdn.skypack.dev/alpinejs';
     import AsyncAlpine from '/dist/async-alpine.esm.js';
-    AsyncAlpine.init(Alpine)
-    AsyncAlpine.data('output', () => import('/components/output.js'))
-    AsyncAlpine.start()
-    Alpine.start()
+    setTimeout(() => {
+      AsyncAlpine.init(Alpine)
+      AsyncAlpine.inline('complex')
+      AsyncAlpine.start()
+      Alpine.start()
+    }, 2000)
   </script>
 </body>
 </html>

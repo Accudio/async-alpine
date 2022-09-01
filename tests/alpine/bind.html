@@ -4,32 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <title>Event - Async Alpine tests</title>
+  <title>x-bind - Async Alpine tests</title>
 </head>
 <body>
-  <button
-    x-data
-    @click="() => {
-      document.getElementById('result').innerHTML = `
-      <div
-        ax-load
-        ax-load-src='/components/output.js'
-        x-data='output'
-        x-ignore
-      ></div>
-      `
-    }"
-  >
-    Load
-  </button>
+  <div
+    ax-load
+    ax-load-src="/components/complex.js"
+    x-data="complex"
+    x-ignore
+    x-bind:style="loaded ? 'background-color: yellow' : ''"
+  >Longhand bind</div>
 
-  <div id="result"></div>
+  <div
+    ax-load
+    ax-load-src="/components/complex.js"
+    x-data="complex"
+    x-ignore
+    :style="loaded ? 'background-color: lime' : ''"
+  >Shorthand bind</div>
 
   <script type="module">
     import Alpine from 'https://cdn.skypack.dev/alpinejs';
     import AsyncAlpine from '/dist/async-alpine.esm.js';
     AsyncAlpine.init(Alpine)
-    AsyncAlpine.inline('output')
+    AsyncAlpine.inline('complex')
     AsyncAlpine.start()
     Alpine.start()
   </script>

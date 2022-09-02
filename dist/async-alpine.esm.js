@@ -164,14 +164,16 @@ var AsyncAlpine = {
   async _download(name) {
     if (this._data[name].loaded)
       return;
-    const moduleExport = await this._getModule(name);
-    this.Alpine.data(name, moduleExport);
+    const module = await this._getModule(name);
+    this.Alpine.data(name, module);
     this._data[name].loaded = true;
   },
   async _getModule(name) {
     if (!this._data[name])
       return;
     const module = await this._data[name].download();
+    if (typeof module === "function")
+      return module;
     let whichExport = module[name] || module.default || Object.values(module)[0] || false;
     return whichExport;
   },

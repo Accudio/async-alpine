@@ -80,6 +80,7 @@ const AsyncAlpine = {
     const name = this._parseName(xData);
     if (!this._data[name]) this.data(name);
     this._data[name].download = () => import(
+      /* @vite-ignore */
       /* webpackIgnore: true */
       srcUrl
     );

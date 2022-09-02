@@ -53,7 +53,7 @@ npm install async-alpine
 Import it into your bundle alongside Alpine and run `AsyncAlpine.init(Alpine)` and `AsyncAlpine.start()` it before `Alpine.start()`:
 ```js
 import AsyncAlpine from 'async-alpine';
-import Alpine from 'Alpine.js';
+import Alpine from 'alpinejs';
 
 AsyncAlpine.init(Alpine);
 AsyncAlpine.start();

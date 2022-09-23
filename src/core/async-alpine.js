@@ -249,7 +249,6 @@ const AsyncAlpine = {
   },
 
   _mutationEl(el) {
-    console.log(el)
     // if inline has been triggered and this element has inline src
     if (el.hasAttribute(`${this._options.prefix}${this._options.inline}`)) {
       this._inlineElement(el);

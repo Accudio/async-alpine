@@ -74,8 +74,15 @@ const AsyncAlpine = {
   // process element to add the download function for this component
   _inlineElement(component) {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
-    const srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
+    let srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
     if (!xData || !srcUrl) return;
+
+    // if the URL is relative then convert it to absolute based on the document baseURI
+    // this is needed for when async alpine is loaded from a different origin than the page and component
+    const absoluteReg = new RegExp('^(?:[a-z+]+:)?//', 'i');
+    if (!absoluteReg.test(srcUrl)) {
+      srcUrl = new URL(srcUrl, document.baseURI).href;
+    }
 
     const name = this._parseName(xData);
     if (!this._data[name]) this.data(name);

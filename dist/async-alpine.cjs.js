@@ -113,9 +113,13 @@ var AsyncAlpine = {
   },
   _inlineElement(component) {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
-    const srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
+    let srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
     if (!xData || !srcUrl)
       return;
+    const absoluteReg = new RegExp("^(?:[a-z+]+:)?//", "i");
+    if (!absoluteReg.test(srcUrl)) {
+      srcUrl = new URL(srcUrl, document.baseURI).href;
+    }
     const name = this._parseName(xData);
     if (!this._data[name])
       this.data(name);

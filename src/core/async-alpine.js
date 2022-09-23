@@ -49,7 +49,7 @@ const AsyncAlpine = {
    * component registration
    * =================================
    */
-  // register a component internally and a fake component with Alpine
+  // register a component internally
   data(name, download = false) {
     this._data[name] = {
       loaded: false,
@@ -230,16 +230,14 @@ const AsyncAlpine = {
           // only process element nodes
           if (node.nodeType !== 1) continue;
 
-          // if this node doesn't have ax-load exit early
-          if (!node.hasAttribute(`${this._options.prefix}${this._options.root}`)) continue;
-
-          // if inline has been triggered and this element has inline src
-          if (node.hasAttribute(`${this._options.prefix}${this._options.inline}`)) {
-            this._inlineElement(node);
+          // if the directly added node has ax-load then set it up
+          if (node.hasAttribute(`${this._options.prefix}${this._options.root}`)) {
+            this._mutationEl(node);
           }
 
-          // setup component
-          this._setupComponent(node);
+          // check all descendants for ax-load
+          const childComponents = node.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
+          childComponents.forEach(el => this._mutationEl(el));
         }
       }
     });
@@ -248,6 +246,17 @@ const AsyncAlpine = {
       childList: true,
       subtree: true,
     });
+  },
+
+  _mutationEl(el) {
+    console.log(el)
+    // if inline has been triggered and this element has inline src
+    if (el.hasAttribute(`${this._options.prefix}${this._options.inline}`)) {
+      this._inlineElement(el);
+    }
+
+    // setup component
+    this._setupComponent(el);
   },
 
   /**

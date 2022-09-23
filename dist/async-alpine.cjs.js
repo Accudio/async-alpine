@@ -204,12 +204,11 @@ var AsyncAlpine = {
         for (const node of entry.addedNodes) {
           if (node.nodeType !== 1)
             continue;
-          if (!node.hasAttribute(`${this._options.prefix}${this._options.root}`))
-            continue;
-          if (node.hasAttribute(`${this._options.prefix}${this._options.inline}`)) {
-            this._inlineElement(node);
+          if (node.hasAttribute(`${this._options.prefix}${this._options.root}`)) {
+            this._mutationEl(node);
           }
-          this._setupComponent(node);
+          const childComponents = node.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
+          childComponents.forEach((el) => this._mutationEl(el));
         }
       }
     });
@@ -218,6 +217,13 @@ var AsyncAlpine = {
       childList: true,
       subtree: true
     });
+  },
+  _mutationEl(el) {
+    console.log(el);
+    if (el.hasAttribute(`${this._options.prefix}${this._options.inline}`)) {
+      this._inlineElement(el);
+    }
+    this._setupComponent(el);
   },
   _parseName(attribute) {
     return attribute.split("(")[0];

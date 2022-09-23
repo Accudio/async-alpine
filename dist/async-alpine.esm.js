@@ -206,7 +206,6 @@ var AsyncAlpine = {
     });
   },
   _mutationEl(el) {
-    console.log(el);
     if (el.hasAttribute(`${this._options.prefix}${this._options.inline}`)) {
       this._inlineElement(el);
     }

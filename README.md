@@ -290,6 +290,8 @@ AsyncAlpine.init(Alpine, {
 Alpine.prefix('data-x-')
 ```
 
+For a script installation, advanced options can be specified by setting `window.AsyncAlpineOptions` to the object as above.
+
 ### Available Options
 
 | Option Name          | property          | Default | Notes |

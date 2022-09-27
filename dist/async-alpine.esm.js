@@ -203,7 +203,7 @@ var AsyncAlpine = {
         }
       }
     });
-    observer.observe(document.body, {
+    observer.observe(document, {
       attributes: true,
       childList: true,
       subtree: true

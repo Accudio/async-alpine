@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Body Mutation - Async Alpine tests</title>
+</head>
+<body>
+  <button
+    x-data
+    @click="() => {
+      document.body.outerHTML = `
+        <body>
+          <div
+            ax-load
+            ax-load-src='/components/output.js'
+            x-data='output'
+            x-ignore
+          ></div>
+        </body>
+      `
+    }"
+  >
+    Load
+  </button>
+
+  <div id="result"></div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    AsyncAlpine.init(Alpine)
+    AsyncAlpine.start()
+    Alpine.start()
+  </script>
+</body>
+</html>

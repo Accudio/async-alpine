@@ -39,7 +39,7 @@ Which method you use will depend on how you prefer to use and import Alpine.js.
 
 If you load Alpine from a CDN like [jsdelivr](https://www.jsdelivr.com/package/npm/async-alpine) with a script tag you can load Async Alpine via the same method:
 ```html
-<script src="https://cdn.jsdelivr.net/npm/async-alpine@0.4.x/dist/async-alpine.script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/async-alpine@0.5.x/dist/async-alpine.script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 ```
 

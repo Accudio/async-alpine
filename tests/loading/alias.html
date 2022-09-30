@@ -7,9 +7,11 @@
   <title>Alias loading - Async Alpine tests</title>
 </head>
 <body>
+  <p>Tests loading components with .alias(). Passes if 'loaded' appears below.</p>
+
   <div
     ax-load
-    x-data="output('implicit loaded')"
+    x-data="output('loaded')"
     x-ignore
   ></div>
 

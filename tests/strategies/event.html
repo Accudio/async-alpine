@@ -7,6 +7,8 @@
   <title>Event - Async Alpine tests</title>
 </head>
 <body>
+  <p>Tests the event loading strategy. Passes if 'loaded' appears below the button on click.</p>
+
   <button
     x-data
     @click="$dispatch('async-alpine:load', { id: 'my-component' })"

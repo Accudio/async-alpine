@@ -7,6 +7,8 @@
   <title>Basic combination - Async Alpine tests</title>
 </head>
 <body>
+  <p>Tests combined loading strategies. Passes if 'loaded' is output after the button has been clicked and the viewport has been < 820px wide.</p>
+
   <button
     x-data
     @click="$dispatch('async-alpine:load', { id: 'my-component' })"

@@ -14,6 +14,8 @@ Allows you to load Alpine.js components using JavaScript files based on a variet
 - [Usage](#usage)
    - [Inline Components](#inline-components)
    - [Data Components](#data-components)
+   - [URL Components](#url-components)
+   - [Alias Loading](#alias-loading)
 - [Strategies](#strategies)
    - [eager](#eager)
    - [idle](#idle)
@@ -134,6 +136,36 @@ Alpine.start();
 ```
 
 With this pattern and a build tool that supports it this will automatically build your component into a separate file with the appropriate processing. Keep in mind however if how your distribute your assets changes how they're delivered this may not work and you may need to use Inline Components.
+
+### URL Components
+
+Very similar to [Inline Components](#inline-components) but specifying the URL in JavaScript rather than on the component. This may make it easier to manage components and allows specifying component URLs once instead of on every instance.
+
+```js
+import AsyncAlpine from 'async-alpine';
+import Alpine from 'Alpine.js';
+
+AsyncAlpine
+  .init(Alpine)
+  .url('myComponent', './components/my-component.js')
+  .start();
+
+Alpine.start();
+```
+
+### Alias Loading
+
+If all of your component modules are in a consistent structure the Alias loading method means you don't have to specify the URLs for each component. Instead you can specify the structure of your component files and Async Alpine will construct the URL from the component name.
+
+***Note:*** Async Alpine does not know whether your component files actually exist, it will simply make a blind HTTP request based on the provided URL format and hope it returns something it can execute. For this reason only one `.alias()` is supported.
+
+```js
+// components are in the /components/ directory named myComponent.js
+AsyncAlpine.alias('/components/[name].js')
+
+// components are in the separate directories as index.js
+AsyncAlpine.alias('/components/[name]/index.js')
+```
 
 ***
 

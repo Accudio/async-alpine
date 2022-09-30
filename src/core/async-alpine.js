@@ -12,6 +12,9 @@ const AsyncAlpine = {
     defaultStrategy: 'immediate',
   },
 
+  // if we fall back to an alias when components aren't pre-registered
+  _alias: false,
+
   // data cache
   _data: {},
 
@@ -58,6 +61,22 @@ const AsyncAlpine = {
     return this;
   },
 
+  // shorthand to register a component with a URL in JS
+  url(name, url) {
+    if (!name || !url) return;
+    if (!this._data[name]) this.data(name);
+    this._data[name].download = () => import(
+      /* @vite-ignore */
+      /* webpackIgnore: true */
+      url
+    );
+  },
+
+  // fall back to requesting an unknown URL if a component isn't registered
+  alias(path) {
+    this._alias = path;
+  },
+
   /**
    * =================================
    * process inline components
@@ -85,12 +104,7 @@ const AsyncAlpine = {
     }
 
     const name = this._parseName(xData);
-    if (!this._data[name]) this.data(name);
-    this._data[name].download = () => import(
-      /* @vite-ignore */
-      /* webpackIgnore: true */
-      srcUrl
-    );
+    this.url(name, srcUrl);
   },
 
   /**
@@ -188,7 +202,8 @@ const AsyncAlpine = {
    */
   // check if the component has been downloaded, if not trigger download and register with Alpine
   async _download(name) {
-    if (this._data[name].loaded) return;
+    this._handleAlias(name);
+    if (!this._data[name] || this._data[name].loaded) return;
     const module = await this._getModule(name);
     this.Alpine.data(name, module);
     this._data[name].loaded = true;
@@ -263,6 +278,22 @@ const AsyncAlpine = {
 
     // setup component
     this._setupComponent(el);
+  },
+
+  /**
+   * =================================
+   * alias
+   * =================================
+   * if a component isn't specified allow for falling back to a url.
+   * url should be provided as `/components/[name].js`
+   */
+  _handleAlias(name) {
+    if (!this._alias || this._data[name]) return;
+    // at this point alias is enabled and the component doesn't exist
+    this.url(
+      name,
+      this._alias.replace('[name]', name)
+    );
   },
 
   /**

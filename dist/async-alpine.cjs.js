@@ -79,6 +79,7 @@ var AsyncAlpine = {
     inline: "load-src",
     defaultStrategy: "immediate"
   },
+  _alias: false,
   _data: {},
   _realIndex: -1,
   get _index() {
@@ -105,6 +106,20 @@ var AsyncAlpine = {
     };
     return this;
   },
+  url(name, url) {
+    if (!name || !url)
+      return;
+    if (!this._data[name])
+      this.data(name);
+    this._data[name].download = () => import(
+      /* @vite-ignore */
+      /* webpackIgnore: true */
+      url
+    );
+  },
+  alias(path) {
+    this._alias = path;
+  },
   _processInline() {
     const inlineComponents = document.querySelectorAll(`[${this._options.prefix}${this._options.inline}]`);
     for (const component of inlineComponents) {
@@ -121,13 +136,7 @@ var AsyncAlpine = {
       srcUrl = new URL(srcUrl, document.baseURI).href;
     }
     const name = this._parseName(xData);
-    if (!this._data[name])
-      this.data(name);
-    this._data[name].download = () => import(
-      /* @vite-ignore */
-      /* webpackIgnore: true */
-      srcUrl
-    );
+    this.url(name, srcUrl);
   },
   _setupComponents() {
     const components = document.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
@@ -180,7 +189,8 @@ var AsyncAlpine = {
     });
   },
   async _download(name) {
-    if (this._data[name].loaded)
+    this._handleAlias(name);
+    if (!this._data[name] || this._data[name].loaded)
       return;
     const module2 = await this._getModule(name);
     this.Alpine.data(name, module2);
@@ -227,6 +237,11 @@ var AsyncAlpine = {
       this._inlineElement(el);
     }
     this._setupComponent(el);
+  },
+  _handleAlias(name) {
+    if (!this._alias || this._data[name])
+      return;
+    this.url(name, this._alias.replace("[name]", name));
   },
   _parseName(attribute) {
     return attribute.split("(")[0];

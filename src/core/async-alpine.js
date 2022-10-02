@@ -18,8 +18,8 @@ const AsyncAlpine = {
   // data cache
   _data: {},
 
-  // index for ID generation for event strategy
-  _realIndex: -1,
+  // index for ID generation
+  _realIndex: 0,
   get _index() {
     return this._realIndex++;
   },
@@ -123,8 +123,6 @@ const AsyncAlpine = {
   // set this element up as a component
   _setupComponent(component) {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
-    if (!xData) return;
-
     component.setAttribute(`${this._options.alpinePrefix}ignore`, '');
 
     const name = this._parseName(xData);
@@ -303,7 +301,9 @@ const AsyncAlpine = {
    */
   // take x-data content to parse out name 'output("test")' becomes 'output'
   _parseName(attribute) {
-    return attribute.split('(')[0];
+    const parsedName = (attribute || '').split(/[({]/g)[0];
+    const ourName = parsedName || '_a-' + this._index;
+    return ourName;
   },
 };
 

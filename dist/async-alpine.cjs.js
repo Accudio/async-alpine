@@ -81,7 +81,7 @@ var AsyncAlpine = {
   },
   _alias: false,
   _data: {},
-  _realIndex: -1,
+  _realIndex: 0,
   get _index() {
     return this._realIndex++;
   },
@@ -146,8 +146,6 @@ var AsyncAlpine = {
   },
   _setupComponent(component) {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
-    if (!xData)
-      return;
     component.setAttribute(`${this._options.alpinePrefix}ignore`, "");
     const name = this._parseName(xData);
     const strategy = component.getAttribute(`${this._options.prefix}${this._options.root}`) || this._options.defaultStrategy;
@@ -244,6 +242,8 @@ var AsyncAlpine = {
     this.url(name, this._alias.replace("[name]", name));
   },
   _parseName(attribute) {
-    return attribute.split("(")[0];
+    const parsedName = (attribute || "").split(/[({]/g)[0];
+    const ourName = parsedName || "_a-" + this._index;
+    return ourName;
   }
 };

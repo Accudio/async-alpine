@@ -4,17 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
-  <title>Inline loading - Async Alpine tests</title>
+  <title>Inline Data - Async Alpine tests</title>
 </head>
 <body>
-  <p>Tests loading components with inline ax-load-src. Passes if 'loaded' appears below.</p>
+  <p>Tests empty and inline x-data, and elements within. Passes if 'loaded' is output thrice below.</p>
 
   <div
     ax-load
-    ax-load-src="/components/output.js"
-    x-data="output('loaded')"
+    x-data
+    x-html="'loaded'"
     x-ignore
   ></div>
+
+  <div
+    ax-load
+    x-data="{
+      message: 'loaded'
+    }"
+    x-html="message"
+    x-ignore
+  ></div>
+
+  <div x-data>
+    <div
+      ax-load
+      x-html="'loaded'"
+      x-ignore
+    ></div>
+  </div>
 
   <script type="module">
     import Alpine from 'https://cdn.skypack.dev/alpinejs';

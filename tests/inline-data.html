@@ -37,6 +37,7 @@
     import Alpine from 'https://cdn.skypack.dev/alpinejs';
     import AsyncAlpine from '/dist/async-alpine.esm.js';
     AsyncAlpine.init(Alpine)
+    AsyncAlpine.alias('/components/[name].js')
     AsyncAlpine.start()
     Alpine.start()
   </script>

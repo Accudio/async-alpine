@@ -57,6 +57,7 @@ var visible = (component, requirement) => {
 var visible_default = visible;
 
 // src/core/async-alpine.js
+var internalNamePrefix = "__internal_";
 var AsyncAlpine = {
   Alpine: null,
   _options: {
@@ -174,6 +175,8 @@ var AsyncAlpine = {
     });
   },
   async _download(name) {
+    if (name.startsWith(internalNamePrefix))
+      return;
     this._handleAlias(name);
     if (!this._data[name] || this._data[name].loaded)
       return;
@@ -230,7 +233,7 @@ var AsyncAlpine = {
   },
   _parseName(attribute) {
     const parsedName = (attribute || "").split(/[({]/g)[0];
-    const ourName = parsedName || "_a-" + this._index;
+    const ourName = parsedName || `${internalNamePrefix}${this._index}`;
     return ourName;
   }
 };

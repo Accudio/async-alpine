@@ -1,5 +1,7 @@
 import * as strategies from './strategies/index.js';
 
+const internalNamePrefix = '__internal_';
+
 const AsyncAlpine = {
   Alpine: null,
 
@@ -200,6 +202,7 @@ const AsyncAlpine = {
    */
   // check if the component has been downloaded, if not trigger download and register with Alpine
   async _download(name) {
+    if (name.startsWith(internalNamePrefix)) return;
     this._handleAlias(name);
     if (!this._data[name] || this._data[name].loaded) return;
     const module = await this._getModule(name);
@@ -302,7 +305,7 @@ const AsyncAlpine = {
   // take x-data content to parse out name 'output("test")' becomes 'output'
   _parseName(attribute) {
     const parsedName = (attribute || '').split(/[({]/g)[0];
-    const ourName = parsedName || '_a-' + this._index;
+    const ourName = parsedName || `${internalNamePrefix}${this._index}`;
     return ourName;
   },
 };

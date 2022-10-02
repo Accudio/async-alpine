@@ -1,6 +1,7 @@
 node_modules/
 local/
 .idea/
+.DS_Store
 
 # tests
 /tests/dist/

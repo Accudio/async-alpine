@@ -70,7 +70,7 @@ const AsyncAlpine = {
     this._data[name].download = () => import(
       /* @vite-ignore */
       /* webpackIgnore: true */
-      url
+      this._parseUrl(url)
     );
   },
 
@@ -97,13 +97,6 @@ const AsyncAlpine = {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
     let srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
     if (!xData || !srcUrl) return;
-
-    // if the URL is relative then convert it to absolute based on the document baseURI
-    // this is needed for when async alpine is loaded from a different origin than the page and component
-    const absoluteReg = new RegExp('^(?:[a-z+]+:)?//', 'i');
-    if (!absoluteReg.test(srcUrl)) {
-      srcUrl = new URL(srcUrl, document.baseURI).href;
-    }
 
     const name = this._parseName(xData);
     this.url(name, srcUrl);
@@ -307,6 +300,17 @@ const AsyncAlpine = {
     const parsedName = (attribute || '').split(/[({]/g)[0];
     const ourName = parsedName || `${internalNamePrefix}${this._index}`;
     return ourName;
+  },
+
+  _parseUrl(url) {
+    // if the URL is relative then convert it to absolute based on the document baseURI
+    // this is needed for when async alpine is loaded from a different origin than the page and component
+    const absoluteReg = new RegExp('^(?:[a-z+]+:)?//', 'i');
+    if (!absoluteReg.test(url)) {
+      return new URL(url, document.baseURI).href;
+    }
+
+    return url;
   },
 };
 

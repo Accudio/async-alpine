@@ -115,7 +115,7 @@ var AsyncAlpine = {
     this._data[name].download = () => import(
       /* @vite-ignore */
       /* webpackIgnore: true */
-      url
+      this._parseUrl(url)
     );
   },
   alias(path) {
@@ -132,10 +132,6 @@ var AsyncAlpine = {
     let srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
     if (!xData || !srcUrl)
       return;
-    const absoluteReg = new RegExp("^(?:[a-z+]+:)?//", "i");
-    if (!absoluteReg.test(srcUrl)) {
-      srcUrl = new URL(srcUrl, document.baseURI).href;
-    }
     const name = this._parseName(xData);
     this.url(name, srcUrl);
   },
@@ -248,5 +244,12 @@ var AsyncAlpine = {
     const parsedName = (attribute || "").split(/[({]/g)[0];
     const ourName = parsedName || `${internalNamePrefix}${this._index}`;
     return ourName;
+  },
+  _parseUrl(url) {
+    const absoluteReg = new RegExp("^(?:[a-z+]+:)?//", "i");
+    if (!absoluteReg.test(url)) {
+      return new URL(url, document.baseURI).href;
+    }
+    return url;
   }
 };

@@ -1,7 +1,7 @@
-<h1 align="center"><img src="https://github.com/accudio/async-alpine/raw/main/.assets/logo.svg" width="361" height="112" alt="Async Alpine"></h1>
+<h1 align="center"><img src="https://github.com/accudio/async-alpine/raw/main/.assets/logo.svg" width="720" height="300" alt="Async Alpine"></h1>
 
 <p align="center">
-  <em>Code splitting and lazy-loading components for <a href="https://alpinejs.dev">Alpine.js</a>!</em>
+  <em>Code splitting and lazy-loading components for <a href="https://alpinejs.dev">Alpine.js</a>!</em><br><br>
 </p>
 
 Async Alpine is a wrapper around the Alpine.js JavaScript framework that allows you to load components asynchronously on-demand.

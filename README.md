@@ -1,4 +1,4 @@
-<h1 align="center"><img src="https://github.com/accudio/async-alpine/raw/main/.assets/logo.svg" width="720" height="300" alt="Async Alpine"></h1>
+<h1 align="center"><img src="https://github.com/accudio/async-alpine/raw/main/.assets/logo.svg" alt="Async Alpine"></h1>
 
 <p align="center">
   <em>Code splitting and lazy-loading components for <a href="https://alpinejs.dev">Alpine.js</a>!</em><br><br>

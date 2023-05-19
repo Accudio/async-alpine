@@ -1,8 +1,12 @@
-const media = requirement => {
+const media = ({ argument }) => {
   return new Promise(resolve => {
-    const queryStart = requirement.indexOf('(');
-    const query = requirement.slice(queryStart);
-    const mediaQuery = window.matchMedia(query);
+    if (!argument) {
+      // eslint-disable-next-line no-console
+      console.log("Async Alpine: media strategy requires a media query. Treating as 'eager'");
+      return resolve();
+    }
+
+    const mediaQuery = window.matchMedia(`(${argument})`);
     if (mediaQuery.matches) {
       resolve();
     } else {

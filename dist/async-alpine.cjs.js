@@ -11,8 +11,24 @@ __export(exports, {
   default: () => AsyncAlpine
 });
 
+// src/core/strategies/index.js
+var strategies_exports = {};
+__export(strategies_exports, {
+  eager: () => eager_default,
+  event: () => event_default,
+  idle: () => idle_default,
+  media: () => media_default,
+  visible: () => visible_default
+});
+
+// src/core/strategies/eager.js
+var eager = () => {
+  return true;
+};
+var eager_default = eager;
+
 // src/core/strategies/event.js
-var event = (component) => {
+var event = ({ component }) => {
   return new Promise((resolve) => {
     window.addEventListener("async-alpine:load", (e) => {
       if (e.detail.id !== component.id)
@@ -36,11 +52,13 @@ var idle = () => {
 var idle_default = idle;
 
 // src/core/strategies/media.js
-var media = (requirement) => {
+var media = ({ argument }) => {
   return new Promise((resolve) => {
-    const queryStart = requirement.indexOf("(");
-    const query = requirement.slice(queryStart);
-    const mediaQuery = window.matchMedia(query);
+    if (!argument) {
+      console.log("Async Alpine: media strategy requires a media query. Treating as 'eager'");
+      return resolve();
+    }
+    const mediaQuery = window.matchMedia(`(${argument})`);
     if (mediaQuery.matches) {
       resolve();
     } else {
@@ -51,13 +69,9 @@ var media = (requirement) => {
 var media_default = media;
 
 // src/core/strategies/visible.js
-var visible = (component, requirement) => {
+var visible = ({ component, argument }) => {
   return new Promise((resolve) => {
-    let rootMargin = "0px 0px 0px 0px";
-    if (requirement.indexOf("(") !== -1) {
-      const rootMarginStart = requirement.indexOf("(") + 1;
-      rootMargin = requirement.slice(rootMarginStart, -1);
-    }
+    const rootMargin = argument || "0px 0px 0px 0px";
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
         observer.disconnect();
@@ -69,6 +83,79 @@ var visible = (component, requirement) => {
 };
 var visible_default = visible;
 
+// src/core/requirement-parser.js
+function parseRequirements(expression) {
+  const tokens = tokenize(expression);
+  let ast = parseExpression(tokens);
+  if (ast.type === "method") {
+    return {
+      type: "expression",
+      operator: "&&",
+      parameters: [ast]
+    };
+  }
+  return ast;
+}
+function tokenize(expression) {
+  const regex = /\s*([()])\s*|\s*(\|\||&&|\|)\s*|\s*((?:[^()&|]+\([^()]+\))|[^()&|]+)\s*/g;
+  const tokens = [];
+  let match;
+  while ((match = regex.exec(expression)) !== null) {
+    const [, parenthesis, operator, token] = match;
+    if (parenthesis !== void 0) {
+      tokens.push({ type: "parenthesis", value: parenthesis });
+    } else if (operator !== void 0) {
+      tokens.push({
+        type: "operator",
+        value: operator === "|" ? "&&" : operator
+      });
+    } else {
+      const tokenObj = {
+        type: "method",
+        method: token.trim()
+      };
+      if (token.includes("(")) {
+        tokenObj.method = token.substring(0, token.indexOf("(")).trim();
+        tokenObj.argument = token.substring(token.indexOf("(") + 1, token.indexOf(")"));
+      }
+      if (token.method === "immediate") {
+        token.method = "eager";
+      }
+      tokens.push(tokenObj);
+    }
+  }
+  return tokens;
+}
+function parseExpression(tokens) {
+  let ast = parseTerm(tokens);
+  while (tokens.length > 0 && (tokens[0].value === "&&" || tokens[0].value === "|" || tokens[0].value === "||")) {
+    const operator = tokens.shift().value;
+    const right = parseTerm(tokens);
+    if (ast.type === "expression" && ast.operator === operator) {
+      ast.parameters.push(right);
+    } else {
+      ast = {
+        type: "expression",
+        operator,
+        parameters: [ast, right]
+      };
+    }
+  }
+  return ast;
+}
+function parseTerm(tokens) {
+  if (tokens[0].value === "(") {
+    tokens.shift();
+    const ast = parseExpression(tokens);
+    if (tokens[0].value === ")") {
+      tokens.shift();
+    }
+    return ast;
+  } else {
+    return tokens.shift();
+  }
+}
+
 // src/core/async-alpine.js
 var internalNamePrefix = "__internal_";
 var AsyncAlpine = {
@@ -78,7 +165,7 @@ var AsyncAlpine = {
     alpinePrefix: "x-",
     root: "load",
     inline: "load-src",
-    defaultStrategy: "immediate"
+    defaultStrategy: "eager"
   },
   _alias: false,
   _data: {},
@@ -154,33 +241,25 @@ var AsyncAlpine = {
     });
   },
   async _componentStrategy(component) {
-    const requirements = component.strategy.split("|").map((requirement) => requirement.trim()).filter((requirement) => requirement !== "immediate").filter((requirement) => requirement !== "eager");
-    if (!requirements.length) {
-      await this._download(component.name);
-      this._activate(component);
-      return;
-    }
-    let promises = [];
-    for (let requirement of requirements) {
-      if (requirement === "idle") {
-        promises.push(idle_default());
-        continue;
+    const requirements = parseRequirements(component.strategy);
+    await this._generateRequirements(component, requirements);
+    await this._download(component.name);
+    this._activate(component);
+  },
+  _generateRequirements(component, obj) {
+    if (obj.type === "expression") {
+      if (obj.operator === "&&") {
+        return Promise.all(obj.parameters.map((param) => this._generateRequirements(component, param)));
       }
-      if (requirement.startsWith("visible")) {
-        promises.push(visible_default(component, requirement));
-        continue;
-      }
-      if (requirement.startsWith("media")) {
-        promises.push(media_default(requirement));
-        continue;
-      }
-      if (requirement === "event") {
-        promises.push(event_default(component));
+      if (obj.operator === "||") {
+        return Promise.any(obj.parameters.map((param) => this._generateRequirements(component, param)));
       }
     }
-    Promise.all(promises).then(async () => {
-      await this._download(component.name);
-      this._activate(component);
+    if (!strategies_exports[obj.method])
+      return false;
+    return strategies_exports[obj.method]({
+      component,
+      argument: obj.argument
     });
   },
   async _download(name) {

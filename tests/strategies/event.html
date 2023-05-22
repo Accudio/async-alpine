@@ -7,22 +7,38 @@
   <title>Event - Async Alpine tests</title>
 </head>
 <body>
-  <p>Tests the event loading strategy. Passes if 'loaded' appears below the button on click.</p>
+  <p>Tests the event loading strategy. Passes if a 'loaded' message appears below each button on click.</p>
 
-  <button
-    x-data
-    @click="$dispatch('async-alpine:load', { id: 'my-component' })"
-  >
-    Load
-  </button>
+  <div>
+    <button
+      x-data
+      @click="$dispatch('async-alpine:load', { id: 'my-component' })"
+    >
+      Load 1
+    </button>
+    <div
+      id="my-component"
+      ax-load="event"
+      ax-load-src="/components/output.js"
+      x-data="output('loaded with async-alpine:load and component ID')"
+      x-ignore
+    ></div>
+  </div>
 
-  <div
-    id="my-component"
-    ax-load="event"
-    ax-load-src="/components/output.js"
-    x-data="output('loaded')"
-    x-ignore
-  ></div>
+  <div>
+    <button
+      x-data
+      @click="$dispatch('custom-event')"
+    >
+      Load 2
+    </button>
+    <div
+      ax-load="event (custom-event)"
+      ax-load-src="/components/output.js"
+      x-data="output('loaded with custom event')"
+      x-ignore
+    ></div>
+  </div>
 
   <script type="module">
     import Alpine from 'https://cdn.skypack.dev/alpinejs';

@@ -28,13 +28,19 @@ var eager = () => {
 var eager_default = eager;
 
 // src/core/strategies/event.js
-var event = ({ component }) => {
+var event = ({ component, argument }) => {
   return new Promise((resolve) => {
-    window.addEventListener("async-alpine:load", (e) => {
-      if (e.detail.id !== component.id)
-        return;
-      resolve();
-    });
+    if (argument) {
+      window.addEventListener(argument, () => resolve(), { once: true });
+    } else {
+      const cb = (e) => {
+        if (e.detail.id !== component.id)
+          return;
+        window.removeEventListener("async-alpine:load", cb);
+        resolve();
+      };
+      window.addEventListener("async-alpine:load", cb);
+    }
   });
 };
 var event_default = event;

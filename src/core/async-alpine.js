@@ -1,4 +1,5 @@
 import * as strategies from './strategies/index.js';
+import parseRequirements from './requirement-parser.js';
 
 const internalNamePrefix = '__internal_';
 
@@ -11,7 +12,7 @@ const AsyncAlpine = {
     alpinePrefix: 'x-',
     root: 'load',
     inline: 'load-src',
-    defaultStrategy: 'immediate',
+    defaultStrategy: 'eager',
   },
 
   // if we fall back to an alias when components aren't pre-registered
@@ -139,53 +140,36 @@ const AsyncAlpine = {
    * component when requirements have been met
    */
   async _componentStrategy(component) {
-    // split strategy into parts
-    const requirements = component.strategy
-      .split('|')
-      .map(requirement => requirement.trim())
-      .filter(requirement => requirement !== 'immediate')
-      .filter(requirement => requirement !== 'eager');
+    const requirements = parseRequirements(component.strategy);
 
-    // if no requirements then load immediately
-    if (!requirements.length) {
-      await this._download(component.name);
-      this._activate(component);
-      return;
-    }
+    await this._generateRequirements(component, requirements);
+    await this._download(component.name);
+    this._activate(component);
+  },
 
-    // set up promises for loading
-    let promises = [];
-    for (let requirement of requirements) {
-      // idle using requestIdleCallback
-      if (requirement === 'idle') {
-        promises.push(strategies.idle());
-        continue;
+  _generateRequirements(component, obj) {
+    if (obj.type === 'expression') {
+      if (obj.operator === '&&') {
+        return Promise.all(
+          obj.parameters
+            .map(param => this._generateRequirements(component, param))
+        );
       }
 
-      // visible using intersectionObserver
-      if (requirement.startsWith('visible')) {
-        promises.push(strategies.visible(component, requirement));
-        continue;
-      }
-
-      // media query
-      if (requirement.startsWith('media')) {
-        promises.push(strategies.media(requirement));
-        continue;
-      }
-
-      // event
-      if (requirement === 'event') {
-        promises.push(strategies.event(component));
+      if (obj.operator === '||') {
+        return Promise.any(
+          obj.parameters
+            .map(param => this._generateRequirements(component, param))
+        );
       }
     }
 
-    // wait for all promises (requirements) to resolve and then download component
-    Promise.all(promises)
-      .then(async () => {
-        await this._download(component.name);
-        this._activate(component);
-      });
+    if (!strategies[obj.method]) return false;
+
+    return strategies[obj.method]({
+      component,
+      argument: obj.argument,
+    });
   },
 
   /**

@@ -270,7 +270,7 @@ const AsyncAlpine = {
     // at this point alias is enabled and the component doesn't exist
     this.url(
       name,
-      this._alias.replace('[name]', name)
+      this._alias.replaceAll('[name]', name)
     );
   },
 

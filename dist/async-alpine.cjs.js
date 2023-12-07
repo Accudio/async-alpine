@@ -281,7 +281,7 @@ var AsyncAlpine = {
   async _getModule(name) {
     if (!this._data[name])
       return;
-    const module2 = await this._data[name].download();
+    const module2 = await this._data[name].download(name);
     if (typeof module2 === "function")
       return module2;
     let whichExport = module2[name] || module2.default || Object.values(module2)[0] || false;
@@ -323,6 +323,10 @@ var AsyncAlpine = {
   _handleAlias(name) {
     if (!this._alias || this._data[name])
       return;
+    if (typeof this._alias === "function") {
+      this.data(name, this._alias);
+      return;
+    }
     this.url(name, this._alias.replace("[name]", name));
   },
   _parseName(attribute) {

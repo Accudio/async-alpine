@@ -268,8 +268,7 @@ const AsyncAlpine = {
   _handleAlias(name) {
     if (!this._alias || this._data[name]) return;
 
-    if(typeof this._alias === 'function')
-    {
+    if (typeof this._alias === 'function') {
       this.data(name, this._alias);
       return;
     }

@@ -14,7 +14,7 @@ const event = ({ component, argument }) => {
         if (e.detail.id !== component.id) return;
         window.removeEventListener('async-alpine:load', cb);
         resolve();
-      }
+      };
       window.addEventListener('async-alpine:load', cb);
     }
   });

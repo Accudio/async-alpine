@@ -45,4 +45,4 @@ This project is licensed under the Apache-2.0 license.
 
 The full license is included at [LICENSE.md](/accudio/async-alpine/blob/main/LICENSE.md), or at [apache.org/licenses/LICENSE-2.0](https://apache.org/licenses/LICENSE-2.0).
 
-Copyright © 2022 [Alistair Shepherd](https://alistairshepherd.uk).
+Copyright © 2023 [Alistair Shepherd](https://alistairshepherd.uk).

@@ -191,7 +191,7 @@ const AsyncAlpine = {
   async _getModule(name) {
     if (!this._data[name]) return;
 
-    const module = await this._data[name].download();
+    const module = await this._data[name].download(name);
 
     // if the download function returns a function instead return that
     if (typeof module === 'function') return module;
@@ -267,10 +267,16 @@ const AsyncAlpine = {
    */
   _handleAlias(name) {
     if (!this._alias || this._data[name]) return;
+
+    if (typeof this._alias === 'function') {
+      this.data(name, this._alias);
+      return;
+    }
+
     // at this point alias is enabled and the component doesn't exist
     this.url(
       name,
-      this._alias.replace('[name]', name)
+      this._alias.replaceAll('[name]', name)
     );
   },
 

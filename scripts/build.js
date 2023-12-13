@@ -9,7 +9,7 @@ async function build(src, opts) {
     entryPoints: [ `./src/${ src }` ],
     bundle: true,
     outfile: `./dist/${ name }`,
-    format: opts.format || 'esm',
+    format: opts.format || 'iife',
     minify: opts.minify ?? true,
     target: [ 'es2019' ],
   });
@@ -18,7 +18,7 @@ async function build(src, opts) {
 async function buildAll() {
   return Promise.all([
     build('script.js', { name: 'script' }),
-    build('module.js', { name: 'esm', minify: false }),
+    build('module.js', { name: 'esm', format: 'esm', minify: false }),
     build('module.js', { name: 'cjs', format: 'cjs', minify: false })
   ]);
 }

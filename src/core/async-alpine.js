@@ -1,18 +1,18 @@
-import * as strategies from "./strategies/index.js";
-import parseRequirements from "./requirement-parser.js";
+import * as strategies from './strategies/index.js';
+import parseRequirements from './requirement-parser.js';
 
-const internalNamePrefix = "__internal_";
+const internalNamePrefix = '__internal_';
 
 const AsyncAlpine = {
   Alpine: null,
 
   // custom options, over-ridden by the second param of init
   _options: {
-    prefix: "ax-",
-    alpinePrefix: "x-",
-    root: "load",
-    inline: "load-src",
-    defaultStrategy: "eager",
+    prefix: 'ax-',
+    alpinePrefix: 'x-',
+    root: 'load',
+    inline: 'load-src',
+    defaultStrategy: 'eager',
   },
 
   // if we fall back to an alias when components aren't pre-registered
@@ -126,7 +126,7 @@ const AsyncAlpine = {
   // set this element up as a component
   _setupComponent(component) {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
-    component.setAttribute(`${this._options.alpinePrefix}ignore`, "");
+    component.setAttribute(`${this._options.alpinePrefix}ignore`, '');
 
     const name = this._parseName(xData);
     const strategy =
@@ -157,8 +157,8 @@ const AsyncAlpine = {
   },
 
   _generateRequirements(component, obj) {
-    if (obj.type === "expression") {
-      if (obj.operator === "&&") {
+    if (obj.type === 'expression') {
+      if (obj.operator === '&&') {
         return Promise.all(
           obj.parameters.map((param) =>
             this._generateRequirements(component, param)
@@ -166,7 +166,7 @@ const AsyncAlpine = {
         );
       }
 
-      if (obj.operator === "||") {
+      if (obj.operator === '||') {
         return Promise.any(
           obj.parameters.map((param) =>
             this._generateRequirements(component, param)
@@ -205,7 +205,7 @@ const AsyncAlpine = {
     const module = await this._data[name].download(name);
 
     // if the download function returns a function instead return that
-    if (typeof module === "function") return module;
+    if (typeof module === 'function') return module;
 
     // work out which export to use in order of preference:
     // name; default; first export
@@ -285,13 +285,13 @@ const AsyncAlpine = {
   _handleAlias(name) {
     if (!this._alias || this._data[name]) return;
 
-    if (typeof this._alias === "function") {
+    if (typeof this._alias === 'function') {
       this.data(name, this._alias);
       return;
     }
 
     // at this point alias is enabled and the component doesn't exist
-    this.url(name, this._alias.replaceAll("[name]", name));
+    this.url(name, this._alias.replaceAll('[name]', name));
   },
 
   /**
@@ -299,9 +299,9 @@ const AsyncAlpine = {
    * helpers
    * =================================
    */
-  // take x-data content to parse out name 'output("test")' becomes 'output'
+  // take x-data content to parse out name 'output('test')' becomes 'output'
   _parseName(attribute) {
-    const parsedName = (attribute || "").split(/[({]/g)[0];
+    const parsedName = (attribute || '').split(/[({]/g)[0];
     const ourName = parsedName || `${internalNamePrefix}${this._index}`;
     return ourName;
   },
@@ -309,7 +309,7 @@ const AsyncAlpine = {
   _parseUrl(url) {
     // if the URL is relative then convert it to absolute based on the document baseURI
     // this is needed for when async alpine is loaded from a different origin than the page and component
-    const absoluteReg = new RegExp("^(?:[a-z+]+:)?//", "i");
+    const absoluteReg = new RegExp('^(?:[a-z+]+:)?//', 'i');
     if (!absoluteReg.test(url)) {
       return new URL(url, document.baseURI).href;
     }

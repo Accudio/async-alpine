@@ -68,12 +68,11 @@ const AsyncAlpine = {
   url(name, url) {
     if (!name || !url) return;
     if (!this._data[name]) this.data(name);
-    this._data[name].download = () =>
-      import(
-        /* @vite-ignore */
-        /* webpackIgnore: true */
-        this._parseUrl(url)
-      );
+    this._data[name].download = () => import(
+      /* @vite-ignore */
+      /* webpackIgnore: true */
+      this._parseUrl(url)
+    );
   },
 
   // fall back to requesting an unknown URL if a component isn't registered
@@ -88,9 +87,7 @@ const AsyncAlpine = {
    */
   // loop through all elements with ax-load-src to process them
   _processInline() {
-    const inlineComponents = document.querySelectorAll(
-      `[${this._options.prefix}${this._options.inline}]`
-    );
+    const inlineComponents = document.querySelectorAll(`[${this._options.prefix}${this._options.inline}]`);
     for (const component of inlineComponents) {
       this._inlineElement(component);
     }
@@ -99,9 +96,7 @@ const AsyncAlpine = {
   // process element to add the download function for this component
   _inlineElement(component) {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
-    let srcUrl = component.getAttribute(
-      `${this._options.prefix}${this._options.inline}`
-    );
+    let srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
     if (!xData || !srcUrl) return;
 
     const name = this._parseName(xData);
@@ -115,9 +110,7 @@ const AsyncAlpine = {
    */
   // loop through elements with ax-load and set them up as components
   _setupComponents() {
-    const components = document.querySelectorAll(
-      `[${this._options.prefix}${this._options.root}]`
-    );
+    const components = document.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
     for (let component of components) {
       this._setupComponent(component);
     }
@@ -129,9 +122,7 @@ const AsyncAlpine = {
     component.setAttribute(`${this._options.alpinePrefix}ignore`, '');
 
     const name = this._parseName(xData);
-    const strategy =
-      component.getAttribute(`${this._options.prefix}${this._options.root}`) ||
-      this._options.defaultStrategy;
+    const strategy = component.getAttribute(`${this._options.prefix}${this._options.root}`) || this._options.defaultStrategy;
 
     this._componentStrategy({
       name,
@@ -160,17 +151,15 @@ const AsyncAlpine = {
     if (obj.type === 'expression') {
       if (obj.operator === '&&') {
         return Promise.all(
-          obj.parameters.map((param) =>
-            this._generateRequirements(component, param)
-          )
+          obj.parameters
+            .map(param => this._generateRequirements(component, param))
         );
       }
 
       if (obj.operator === '||') {
         return Promise.any(
-          obj.parameters.map((param) =>
-            this._generateRequirements(component, param)
-          )
+          obj.parameters
+            .map(param => this._generateRequirements(component, param))
         );
       }
     }
@@ -209,8 +198,7 @@ const AsyncAlpine = {
 
     // work out which export to use in order of preference:
     // name; default; first export
-    let whichExport =
-      module[name] || module.default || Object.values(module)[0] || false;
+    let whichExport = module[name] || module.default || Object.values(module)[0] || false;
     return whichExport;
   },
 
@@ -236,7 +224,7 @@ const AsyncAlpine = {
    * watch for DOM mutations and set up added elements as new components
    */
   _mutations() {
-    const observer = new MutationObserver((entries) => {
+    const observer = new MutationObserver(entries => {
       for (const entry of entries) {
         if (!entry.addedNodes) continue;
         for (const node of entry.addedNodes) {
@@ -244,17 +232,13 @@ const AsyncAlpine = {
           if (node.nodeType !== 1) continue;
 
           // if the directly added node has ax-load then set it up
-          if (
-            node.hasAttribute(`${this._options.prefix}${this._options.root}`)
-          ) {
+          if (node.hasAttribute(`${this._options.prefix}${this._options.root}`)) {
             this._mutationEl(node);
           }
 
           // check all descendants for ax-load
-          const childComponents = node.querySelectorAll(
-            `[${this._options.prefix}${this._options.root}]`
-          );
-          childComponents.forEach((el) => this._mutationEl(el));
+          const childComponents = node.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
+          childComponents.forEach(el => this._mutationEl(el));
         }
       }
     });
@@ -291,7 +275,10 @@ const AsyncAlpine = {
     }
 
     // at this point alias is enabled and the component doesn't exist
-    this.url(name, this._alias.replaceAll('[name]', name));
+    this.url(
+      name,
+      this._alias.replaceAll('[name]', name)
+    );
   },
 
   /**
@@ -299,7 +286,7 @@ const AsyncAlpine = {
    * helpers
    * =================================
    */
-  // take x-data content to parse out name 'output('test')' becomes 'output'
+  // take x-data content to parse out name 'output("test")' becomes 'output'
   _parseName(attribute) {
     const parsedName = (attribute || '').split(/[({]/g)[0];
     const ourName = parsedName || `${internalNamePrefix}${this._index}`;

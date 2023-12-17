@@ -1,18 +1,18 @@
-import * as strategies from './strategies/index.js';
-import parseRequirements from './requirement-parser.js';
+import * as strategies from "./strategies/index.js";
+import parseRequirements from "./requirement-parser.js";
 
-const internalNamePrefix = '__internal_';
+const internalNamePrefix = "__internal_";
 
 const AsyncAlpine = {
   Alpine: null,
 
   // custom options, over-ridden by the second param of init
   _options: {
-    prefix: 'ax-',
-    alpinePrefix: 'x-',
-    root: 'load',
-    inline: 'load-src',
-    defaultStrategy: 'eager',
+    prefix: "ax-",
+    alpinePrefix: "x-",
+    root: "load",
+    inline: "load-src",
+    defaultStrategy: "eager",
   },
 
   // if we fall back to an alias when components aren't pre-registered
@@ -68,11 +68,12 @@ const AsyncAlpine = {
   url(name, url) {
     if (!name || !url) return;
     if (!this._data[name]) this.data(name);
-    this._data[name].download = () => import(
-      /* @vite-ignore */
-      /* webpackIgnore: true */
-      this._parseUrl(url)
-    );
+    this._data[name].download = () =>
+      import(
+        /* @vite-ignore */
+        /* webpackIgnore: true */
+        this._parseUrl(url)
+      );
   },
 
   // fall back to requesting an unknown URL if a component isn't registered
@@ -87,7 +88,9 @@ const AsyncAlpine = {
    */
   // loop through all elements with ax-load-src to process them
   _processInline() {
-    const inlineComponents = document.querySelectorAll(`[${this._options.prefix}${this._options.inline}]`);
+    const inlineComponents = document.querySelectorAll(
+      `[${this._options.prefix}${this._options.inline}]`
+    );
     for (const component of inlineComponents) {
       this._inlineElement(component);
     }
@@ -96,7 +99,9 @@ const AsyncAlpine = {
   // process element to add the download function for this component
   _inlineElement(component) {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
-    let srcUrl = component.getAttribute(`${this._options.prefix}${this._options.inline}`);
+    let srcUrl = component.getAttribute(
+      `${this._options.prefix}${this._options.inline}`
+    );
     if (!xData || !srcUrl) return;
 
     const name = this._parseName(xData);
@@ -110,7 +115,9 @@ const AsyncAlpine = {
    */
   // loop through elements with ax-load and set them up as components
   _setupComponents() {
-    const components = document.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
+    const components = document.querySelectorAll(
+      `[${this._options.prefix}${this._options.root}]`
+    );
     for (let component of components) {
       this._setupComponent(component);
     }
@@ -119,10 +126,12 @@ const AsyncAlpine = {
   // set this element up as a component
   _setupComponent(component) {
     const xData = component.getAttribute(`${this._options.alpinePrefix}data`);
-    component.setAttribute(`${this._options.alpinePrefix}ignore`, '');
+    component.setAttribute(`${this._options.alpinePrefix}ignore`, "");
 
     const name = this._parseName(xData);
-    const strategy = component.getAttribute(`${this._options.prefix}${this._options.root}`) || this._options.defaultStrategy;
+    const strategy =
+      component.getAttribute(`${this._options.prefix}${this._options.root}`) ||
+      this._options.defaultStrategy;
 
     this._componentStrategy({
       name,
@@ -148,18 +157,20 @@ const AsyncAlpine = {
   },
 
   _generateRequirements(component, obj) {
-    if (obj.type === 'expression') {
-      if (obj.operator === '&&') {
+    if (obj.type === "expression") {
+      if (obj.operator === "&&") {
         return Promise.all(
-          obj.parameters
-            .map(param => this._generateRequirements(component, param))
+          obj.parameters.map((param) =>
+            this._generateRequirements(component, param)
+          )
         );
       }
 
-      if (obj.operator === '||') {
+      if (obj.operator === "||") {
         return Promise.any(
-          obj.parameters
-            .map(param => this._generateRequirements(component, param))
+          obj.parameters.map((param) =>
+            this._generateRequirements(component, param)
+          )
         );
       }
     }
@@ -194,11 +205,12 @@ const AsyncAlpine = {
     const module = await this._data[name].download(name);
 
     // if the download function returns a function instead return that
-    if (typeof module === 'function') return module;
+    if (typeof module === "function") return module;
 
     // work out which export to use in order of preference:
     // name; default; first export
-    let whichExport = module[name] || module.default || Object.values(module)[0] || false;
+    let whichExport =
+      module[name] || module.default || Object.values(module)[0] || false;
     return whichExport;
   },
 
@@ -210,6 +222,7 @@ const AsyncAlpine = {
    * them force Alpine to re-scan the tree
    */
   _activate(component) {
+    this.Alpine.destroyTree(component.el);
     component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
     // eslint-disable-next-line camelcase
     component.el._x_ignore = false;
@@ -223,7 +236,7 @@ const AsyncAlpine = {
    * watch for DOM mutations and set up added elements as new components
    */
   _mutations() {
-    const observer = new MutationObserver(entries => {
+    const observer = new MutationObserver((entries) => {
       for (const entry of entries) {
         if (!entry.addedNodes) continue;
         for (const node of entry.addedNodes) {
@@ -231,13 +244,17 @@ const AsyncAlpine = {
           if (node.nodeType !== 1) continue;
 
           // if the directly added node has ax-load then set it up
-          if (node.hasAttribute(`${this._options.prefix}${this._options.root}`)) {
+          if (
+            node.hasAttribute(`${this._options.prefix}${this._options.root}`)
+          ) {
             this._mutationEl(node);
           }
 
           // check all descendants for ax-load
-          const childComponents = node.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
-          childComponents.forEach(el => this._mutationEl(el));
+          const childComponents = node.querySelectorAll(
+            `[${this._options.prefix}${this._options.root}]`
+          );
+          childComponents.forEach((el) => this._mutationEl(el));
         }
       }
     });
@@ -268,16 +285,13 @@ const AsyncAlpine = {
   _handleAlias(name) {
     if (!this._alias || this._data[name]) return;
 
-    if (typeof this._alias === 'function') {
+    if (typeof this._alias === "function") {
       this.data(name, this._alias);
       return;
     }
 
     // at this point alias is enabled and the component doesn't exist
-    this.url(
-      name,
-      this._alias.replaceAll('[name]', name)
-    );
+    this.url(name, this._alias.replaceAll("[name]", name));
   },
 
   /**
@@ -287,7 +301,7 @@ const AsyncAlpine = {
    */
   // take x-data content to parse out name 'output("test")' becomes 'output'
   _parseName(attribute) {
-    const parsedName = (attribute || '').split(/[({]/g)[0];
+    const parsedName = (attribute || "").split(/[({]/g)[0];
     const ourName = parsedName || `${internalNamePrefix}${this._index}`;
     return ourName;
   },
@@ -295,7 +309,7 @@ const AsyncAlpine = {
   _parseUrl(url) {
     // if the URL is relative then convert it to absolute based on the document baseURI
     // this is needed for when async alpine is loaded from a different origin than the page and component
-    const absoluteReg = new RegExp('^(?:[a-z+]+:)?//', 'i');
+    const absoluteReg = new RegExp("^(?:[a-z+]+:)?//", "i");
     if (!absoluteReg.test(url)) {
       return new URL(url, document.baseURI).href;
     }

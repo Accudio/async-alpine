@@ -283,6 +283,7 @@ var AsyncAlpine = {
     return whichExport;
   },
   _activate(component) {
+    this.Alpine.destroyTree(component.el);
     component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
     component.el._x_ignore = false;
     this.Alpine.initTree(component.el);

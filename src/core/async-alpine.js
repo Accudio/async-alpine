@@ -210,6 +210,7 @@ const AsyncAlpine = {
    * them force Alpine to re-scan the tree
    */
   _activate(component) {
+    this.Alpine.destroyTree(component.el);
     component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
     // eslint-disable-next-line camelcase
     component.el._x_ignore = false;

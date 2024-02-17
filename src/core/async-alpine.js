@@ -211,9 +211,11 @@ const AsyncAlpine = {
    */
   _activate(component) {
     this.Alpine.destroyTree(component.el);
-    component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
+    const ignoreAttrName = `${this._options.alpinePrefix}ignore`;
+    component.el.removeAttribute(ignoreAttrName);
     // eslint-disable-next-line camelcase
     component.el._x_ignore = false;
+    if (this._anyParent(component.el, el => el.hasAttribute(ignoreAttrName))) return;
     this.Alpine.initTree(component.el);
   },
 
@@ -303,6 +305,12 @@ const AsyncAlpine = {
 
     return url;
   },
+
+  _anyParent(el, callback) {
+    if (!el || el.nodeName === 'HTML') return false;
+    if (callback(el)) return el;
+    return this._anyParent(el.parentElement, callback);
+  }
 };
 
 export { AsyncAlpine };

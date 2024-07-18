@@ -1,28 +1,45 @@
-const esbuild = require('esbuild');
+import esbuild from 'esbuild'
 
-async function build(src, opts) {
-  const name = `async-alpine.${ opts.name }.js`;
-
-  console.log(`Building ${ name }`);
-
-  return esbuild.build({
-    entryPoints: [ `./src/${ src }` ],
-    bundle: true,
-    outfile: `./dist/${ name }`,
-    format: opts.format || 'iife',
-    minify: opts.minify ?? true,
-    target: [ 'es2019' ],
-  });
-}
+buildAll()
 
 async function buildAll() {
-  return Promise.all([
-    build('script.js', { name: 'script' }),
-    build('module.js', { name: 'esm', format: 'esm', minify: false }),
-    build('module.js', { name: 'cjs', format: 'cjs', minify: false })
-  ]);
+	return Promise.all([
+		build('script', {
+			entryPoints: ['src/script.js'],
+			platform: 'browser',
+			minify: true,
+		}),
+		build('esm', {
+			entryPoints: ['src/async-alpine.js'],
+			platform: 'neutral',
+			mainFields: ['module', 'main'],
+		}),
+		build('cjs', {
+			entryPoints: ['src/async-alpine.js'],
+			target: ['node10.4'],
+			platform: 'node',
+		}),
+	])
 }
 
-buildAll().catch(e => console.error(e));
+async function build(name, options) {
+	const path = `async-alpine.${name}.js`
+	console.log(`Building ${name}`)
 
-exports.buildAll = buildAll;
+	if (process.argv.includes('--watch')) {
+		let ctx = await esbuild.context({
+			outfile: `./dist/${path}`,
+			bundle: true,
+			logLevel: 'info',
+			...options,
+		})
+		await ctx.watch()
+	}
+	else {
+		return esbuild.build({
+			outfile: `./dist/${path}`,
+			bundle: true,
+			...options,
+		})
+	}
+}

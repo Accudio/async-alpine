@@ -8,14 +8,14 @@ Async Alpine is a wrapper around the Alpine.js JavaScript framework that allows 
 
 Alpine.js is a fantastic framework but with a large site with lots of components, the bundle size can start to become a performance problem!
 
-Async Alpine allows you to split your components into multiple component files and only load them when they're needed, speeding up your first load!
+Async Alpine allows you to split your components into multiple component files and only load them when they're needed, speeding up your first load! Hi
 
 ## Installation
 
 Using a CDN:
 
 ```html
-<script defer src="https://cdn.jsdelivr.net/npm/async-alpine@1.x.x/dist/async-alpine.script.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/async-alpine@2.x.x/dist/async-alpine.script.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 ```
 

@@ -8,6 +8,7 @@ async function buildAll() {
 			entryPoints: ['src/script.js'],
 			platform: 'browser',
 			minify: true,
+			target: 'es6',
 		}),
 		build('esm', {
 			entryPoints: ['src/async-alpine.js'],
@@ -31,6 +32,7 @@ async function build(name, options) {
 			outfile: `./dist/${path}`,
 			bundle: true,
 			logLevel: 'info',
+			sourcemap: true,
 			...options,
 		})
 		await ctx.watch()

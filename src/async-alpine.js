@@ -11,6 +11,7 @@ export default function (Alpine) {
 	const ignoreAttr = Alpine.prefixed('ignore')
 	let options = {
 		defaultStrategy: 'eager',
+		keepRelativeURLs: false,
 	}
 
 
@@ -181,14 +182,16 @@ export default function (Alpine) {
 		const ourName = parsedName || `_x_async_${index()}`
 		return ourName
 	}
-}
 
-// if the URL is relative then convert it to absolute based on the document baseURI
-// this is needed for when async alpine is loaded from a different origin than the page and component
-function parseUrl(url) {
-	const absoluteReg = new RegExp('^(?:[a-z+]+:)?//', 'i')
-	if (!absoluteReg.test(url)) {
-		return new URL(url, document.baseURI).href
+	// if the URL is relative then convert it to absolute based on the document baseURI
+	// this is needed for when async alpine is loaded from a different origin than the page and component
+	function parseUrl(url) {
+		// if the user has opted in to relative URLs then don't prefix the document baseURI.
+		if (options.keepRelativeURLs) return url
+		const absoluteReg = new RegExp('^(?:[a-z+]+:)?//', 'i')
+		if (!absoluteReg.test(url)) {
+			return new URL(url, document.baseURI).href
+		}
+		return url
 	}
-	return url
 }

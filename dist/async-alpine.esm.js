@@ -170,7 +170,8 @@ function async_alpine_default(Alpine) {
   const srcAttr = Alpine.prefixed("load-src");
   const ignoreAttr = Alpine.prefixed("ignore");
   let options = {
-    defaultStrategy: "eager"
+    defaultStrategy: "eager",
+    keepRelativeURLs: false
   };
   let alias = false;
   let data = {};
@@ -273,13 +274,14 @@ function async_alpine_default(Alpine) {
     const ourName = parsedName || `_x_async_${index()}`;
     return ourName;
   }
-}
-function parseUrl(url) {
-  const absoluteReg = new RegExp("^(?:[a-z+]+:)?//", "i");
-  if (!absoluteReg.test(url)) {
-    return new URL(url, document.baseURI).href;
+  function parseUrl(url) {
+    if (options.keepRelativeURLs) return url;
+    const absoluteReg = new RegExp("^(?:[a-z+]+:)?//", "i");
+    if (!absoluteReg.test(url)) {
+      return new URL(url, document.baseURI).href;
+    }
+    return url;
   }
-  return url;
 }
 export {
   async_alpine_default as default

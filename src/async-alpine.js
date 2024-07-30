@@ -173,14 +173,14 @@ export default function (Alpine) {
 		}
 		Alpine.asyncUrl(name, alias.replaceAll('[name]', name))
 	}
-}
 
-// take x-data content to parse out name. 'output("test")' becomes 'output'
-function parseName(attribute) {
-	const parsedName = (attribute || '').split(/[({]/g)[0]
-	// we need this to support enabling inline expressions without a download
-	const ourName = parsedName || `_x_async_${this._index}`
-	return ourName
+	// take x-data content to parse out name. 'output("test")' becomes 'output'
+	function parseName(attribute) {
+		const parsedName = (attribute || '').split(/[({]/g)[0]
+		// we need this to support enabling inline expressions without a download
+		const ourName = parsedName || `_x_async_${index()}`
+		return ourName
+	}
 }
 
 // if the URL is relative then convert it to absolute based on the document baseURI

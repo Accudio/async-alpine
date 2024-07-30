@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>x-teleport - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests Alpine 'x-teleport'. Passes if 'Toggled content' appears <strong>after</strong> the 'Some other content...'.</p>
+
+  <div data-testid="test" id="container">
+		<div
+				x-load
+				x-load-src="/tests/assets/complex.js"
+				x-data="complex"
+			>
+				<template x-teleport="#container">
+					<div data-testid="after">
+						Toggled content
+					</div>
+				</template>
+			</div>
+
+			<p data-testid="before">content</p>
+	</div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs'
+    import AsyncAlpine from '/dist/async-alpine.esm.js'
+		Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

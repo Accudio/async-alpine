@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>x-ref - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests Alpine 'x-ref'. Passes if the innerHTML for '<strong>Test</strong> <em>element</em>' is output below</p>
+
+  <div
+    x-load
+    x-load-src="/tests/assets/complex.js"
+    x-data="complex"
+  >
+    <div data-testid="src" x-ref="test"><strong>Test</strong> <em>element</em></div>
+		<div data-testid="string" x-text="$refs.test.innerHTML"></div>
+  </div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs'
+    import AsyncAlpine from '/dist/async-alpine.esm.js'
+		Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

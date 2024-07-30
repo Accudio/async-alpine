@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>x-bind - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests Alpine 'x-bind'. Passes if the two lines below have coloured backgrounds.</p>
+
+  <div
+		data-testid="longhand"
+    x-load
+    x-load-src="/tests/assets/complex.js"
+    x-data="complex"
+    x-bind:style="loaded ? 'background-color: rgb(255, 255, 0)' : ''"
+  >Longhand bind</div>
+
+  <div
+		data-testid="shorthand"
+    x-load
+    x-load-src="/tests/assets/complex.js"
+    x-data="complex"
+    x-ignore
+    :style="loaded ? 'background-color: rgb(0, 255, 255)' : ''"
+  >Shorthand bind</div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+		Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

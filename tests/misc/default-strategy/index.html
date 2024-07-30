@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Default Strategy - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests passing defaultStrategy option to script installation method. Passes if 'loaded' is output below when the screen is < 800px.</p>
+
+  <div
+		data-testid="test"
+    x-load
+    x-load-src="/tests/assets/output.js"
+    x-data="output('loaded')"
+  ></div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+		Alpine.asyncOptions({
+      defaultStrategy: 'media (max-width:800px)'
+		})
+    Alpine.start()
+  </script>
+</body>
+</html>

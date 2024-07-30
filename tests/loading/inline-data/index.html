@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Inline Data - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests empty and inline x-data, and elements within. Passes if 'loaded' is output three times below.</p>
+
+  <div
+		data-testid="1"
+    x-load
+    x-data
+    x-html="'loaded'"
+  ></div>
+
+  <div
+		data-testid="2"
+    x-load
+    x-data="{
+      message: 'loaded'
+    }"
+    x-html="message"
+  ></div>
+
+  <div x-data>
+    <div
+			data-testid="3"
+      x-load
+      x-html="'loaded'"
+    ></div>
+  </div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

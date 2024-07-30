@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Event - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests the event loading strategy. Passes if a 'loaded' message appears below each button on click.</p>
+
+  <div>
+    <button
+			data-testid="standard-button"
+      x-data
+      @click="$dispatch('async-alpine:load', { id: 'my-component' })"
+    >
+      Load with async-alpine:load and component ID
+    </button>
+    <div
+			data-testid="standard-result"
+      id="my-component"
+      x-load="event"
+      x-load-src="/tests/assets/output.js"
+      x-data="output('loaded')"
+    ></div>
+  </div>
+
+  <div>
+    <button
+			data-testid="custom-button"
+      x-data
+      @click="$dispatch('custom-event')"
+    >
+      Load with custom event
+    </button>
+    <div
+			data-testid="custom-result"
+      x-load="event (custom-event)"
+      x-load-src="/tests/assets/output.js"
+      x-data="output('loaded')"
+    ></div>
+  </div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

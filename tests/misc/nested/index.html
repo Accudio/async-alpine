@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Nested - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests nested components run in the correct order regardless of download time. Passes if alert with 'outer component loaded' appears before 'inner component loaded' and there are no duplicates.</p>
+
+  <div
+    x-load
+    x-load-src="/tests/assets/expensive.js"
+    x-data="expensive('outer component loaded')"
+  >
+		<span data-testid="outer" x-text="message"></span>
+    <div
+			data-testid="inner"
+      x-load
+      x-load-src="/tests/assets/output-alert.js"
+      x-data="outputAlert('inner component loaded')"
+    ></div>
+  </div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Nested Mutation - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests nested mutations. Passes if 'Output loaded' is output below the button on click.</p>
+
+  <button
+		data-testid="button"
+    x-data
+    @click="() => {
+      document.getElementById('result').innerHTML = `
+      <div>
+        <div
+          x-load
+          x-load-src='/tests/assets/output.js'
+          x-data='output'
+        ></div>
+      </div>
+      `
+    }"
+  >
+    Load
+  </button>
+
+  <div data-testid="result" id="result"></div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

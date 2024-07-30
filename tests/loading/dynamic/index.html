@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Dynamic loading - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests loading components with .data(). Passes if 'loaded' appears below.</p>
+
+  <div
+		data-testid="test"
+    x-load
+    x-data="output('loaded')"
+  ></div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+    Alpine.asyncData('output', () => import('/tests/assets/output.js'))
+    Alpine.start()
+  </script>
+</body>
+</html>

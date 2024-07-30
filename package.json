@@ -1,47 +1,52 @@
 {
-	"name": "async-alpine",
-	"version": "2.0.0",
-	"description": "Load Alpine Componenets asynchronously. Allows for code splitting and lazy loading components!",
-	"author": "Alistair Shepherd <alistair@accudio.com>",
-	"license": "Apache-2.0",
-	"keywords": [],
-	"type": "module",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/accudio/async-alpine.git"
-	},
-	"bugs": {
-		"url": "https://github.com/accudio/async-alpine/issues"
-	},
-	"main": "./dist/async-alpine.script.js",
-	"exports": {
-		"require": "./dist/async-alpine.cjs.js",
-		"import": "./dist/async-alpine.esm.js",
-		"default": "./dist/async-alpine.esm.js"
-	},
-	"files": [
-		"dist"
-	],
-	"lint-staged": {
-		"*": "npm run format"
-	},
-	"devDependencies": {
-		"@stylistic/eslint-plugin": "^2.3.0",
-		"alpinejs": "^3.14.1",
-		"chokidar": "^3.6.0",
-		"esbuild": "^0.23.0",
-		"eslint": "^9.7.0",
-		"fs-extra": "^11.2.0",
-		"husky": "^9.1.1",
-		"lint-staged": "^15.2.7",
-		"serve-handler": "^6.1.5"
-	},
-	"scripts": {
-		"dev": "node scripts/build.js --watch",
-		"build": "node scripts/build.js",
-		"test": "node test.js",
-		"lint": "eslint",
-		"format": "eslint --fix",
-		"prepare": "husky install"
-	}
+  "name": "async-alpine",
+  "version": "2.0.0",
+  "description": "Load Alpine Componenets asynchronously. Allows for code splitting and lazy loading components!",
+  "author": "Alistair Shepherd <alistair@accudio.com>",
+  "license": "Apache-2.0",
+  "keywords": [],
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/accudio/async-alpine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/accudio/async-alpine/issues"
+  },
+  "main": "./dist/async-alpine.script.js",
+  "exports": {
+    "require": "./dist/async-alpine.cjs.js",
+    "import": "./dist/async-alpine.esm.js",
+    "default": "./dist/async-alpine.esm.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "lint-staged": {
+    "*": "npm run format"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.3",
+    "@stylistic/eslint-plugin": "^2.3.0",
+    "@types/node": "^22.0.0",
+    "alpinejs": "^3.14.1",
+    "chokidar": "^3.6.0",
+    "esbuild": "^0.23.0",
+    "eslint": "^9.7.0",
+    "fs-extra": "^11.2.0",
+    "http-server": "^14.1.1",
+    "husky": "^9.1.1",
+    "lint-staged": "^15.2.7",
+    "playwright": "^1.45.3",
+    "serve-handler": "^6.1.5"
+  },
+  "scripts": {
+    "dev": "node scripts/build.js --watch",
+    "build": "node scripts/build.js",
+    "test": "playwright test",
+    "lint": "eslint",
+    "format": "eslint --fix",
+    "prepare": "husky install",
+		"push-dev": "echo '*' > dist/CORS && npx surge dist async-alpine-dev.surge.sh && rm dist/CORS"
+  }
 }

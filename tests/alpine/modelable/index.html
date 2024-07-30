@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>x-modelable - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests Alpine 'x-modelable'. Passes if text typed into the input is output below as it is typed.</p>
+
+  <div
+    x-load
+    x-load-src="/tests/assets/complex.js"
+    x-data="complex"
+  >
+    <div x-data="{ message: 0 }" x-modelable="message" x-model="model">
+      <label for="input">Test input</label>
+      <input data-testid="input" id="input" x-model="message" type="text">
+    </div>
+    <div data-testid="output" x-text="model"></div>
+  </div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

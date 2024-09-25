@@ -2,6 +2,11 @@ node_modules/
 local/
 .idea/
 .DS_Store
+*.map
 
 # tests
 /tests/dist/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

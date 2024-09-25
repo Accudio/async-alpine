@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Body Mutation - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests a mutation where the body element is replaced. Passes if this text and the button is replaced with 'Output loaded' on click.</p>
+
+  <button
+		data-testid="button"
+    x-data
+    @click="() => {
+      document.body.outerHTML = `
+        <body>
+          <div
+            x-load
+            x-load-src='/tests/assets/output.js'
+            x-data='output'
+          ></div>
+        </body>
+      `
+    }"
+  >
+    Load
+  </button>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

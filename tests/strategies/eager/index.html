@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Eager - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests the eager loading strategy. Passes if 'implicit loaded' and 'explicit loaded' appear below.</p>
+
+  <div
+		data-testid="implicit"
+    x-load
+    x-load-src="/tests/assets/output.js"
+    x-data="output('implicit loaded')"
+  ></div>
+
+  <div
+		data-testid="explicit"
+    x-load="eager"
+    x-load-src="/tests/assets/output.js"
+    x-data="output('explicit loaded')"
+  ></div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

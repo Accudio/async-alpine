@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Visible - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests the visible loading strategy. Scroll down the page slowly, passes if: an alert appears when 'Default rootMargin' enters the viewport; a second alert appears when Custom rootMargin is 400px away from the viewport.</p>
+
+  <div
+		data-testid="default"
+    style="margin-top: 200vh;"
+    x-load="visible"
+    x-load-src="/tests/assets/output-alert.js"
+    x-data="outputAlert('default rootMargin: loaded')"
+  >default rootMargin</div>
+
+  <div
+		data-testid="custom"
+    style="margin-top: 100vh;"
+    x-load="visible (400px)"
+    x-load-src="/tests/assets/output-alert.js"
+    x-data="outputAlert('custom rootMargin: loaded')"
+  >custom rootMargin</div>
+
+  <script type="module">
+    import Alpine from 'https://cdn.skypack.dev/alpinejs';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

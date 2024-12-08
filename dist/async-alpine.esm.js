@@ -206,24 +206,28 @@ function async_alpine_default(Alpine) {
     alias = path;
   };
   const syncHandler = (el) => {
-    if (el._x_async) return;
-    el._x_async = "init";
-    el._x_ignore = true;
-    el.setAttribute(ignoreAttr, "");
+    Alpine.skipDuringClone(() => {
+      if (el._x_async) return;
+      el._x_async = "init";
+      el._x_ignore = true;
+      el.setAttribute(ignoreAttr, "");
+    })();
   };
   const handler = async (el) => {
-    if (el._x_async !== "init") return;
-    el._x_async = "await";
-    const { name, strategy } = elementPrep(el);
-    await awaitRequirements({
-      name,
-      strategy,
-      el,
-      id: el.id || index()
-    });
-    await download(name);
-    activate(el);
-    el._x_async = "loaded";
+    Alpine.skipDuringClone(async () => {
+      if (el._x_async !== "init") return;
+      el._x_async = "await";
+      const { name, strategy } = elementPrep(el);
+      await awaitRequirements({
+        name,
+        strategy,
+        el,
+        id: el.id || index()
+      });
+      await download(name);
+      activate(el);
+      el._x_async = "loaded";
+    })();
   };
   handler.inline = syncHandler;
   Alpine.directive(directive, handler).before("ignore");

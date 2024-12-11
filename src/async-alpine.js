@@ -77,26 +77,30 @@ export default function (Alpine) {
 	 */
 	// inline handler adds x-ignore immediately and synchronously
 	const syncHandler = (el) => {
-		if (el._x_async) return
-		el._x_async = 'init'
-		el._x_ignore = true
-		el.setAttribute(ignoreAttr, '')
+		Alpine.skipDuringClone(() => {
+			if (el._x_async) return
+			el._x_async = 'init'
+			el._x_ignore = true
+			el.setAttribute(ignoreAttr, '')
+		})()
 	}
 
 	// the bulk of processing happens within Alpine's deferred handler
 	const handler = async (el) => {
-		if (el._x_async !== 'init') return
-		el._x_async = 'await'
-		const { name, strategy } = elementPrep(el)
-		await awaitRequirements({
-			name,
-			strategy,
-			el,
-			id: el.id || index(),
-		})
-		await download(name)
-		activate(el)
-		el._x_async = 'loaded'
+		Alpine.skipDuringClone(async () => {
+			if (el._x_async !== 'init') return
+			el._x_async = 'await'
+			const { name, strategy } = elementPrep(el)
+			await awaitRequirements({
+				name,
+				strategy,
+				el,
+				id: el.id || index(),
+			})
+			await download(name)
+			activate(el)
+			el._x_async = 'loaded'
+		})()
 	}
 
 	// register handler functions and directive

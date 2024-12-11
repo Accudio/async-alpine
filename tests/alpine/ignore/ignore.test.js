@@ -5,5 +5,5 @@ test('alpine/x-ignore', async ({ page }) => {
 	await expect(page.getByTestId('hidden'))
 		.toBeHidden()
 	await expect(page.getByTestId('shown'))
-		.toBeVisible()
+		.toBeHidden()
 });

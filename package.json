@@ -1,7 +1,7 @@
 {
   "name": "async-alpine",
-  "version": "2.0.0",
-  "description": "Load Alpine Componenets asynchronously. Allows for code splitting and lazy loading components!",
+  "version": "2.0.1",
+  "description": "Load Alpine Components asynchronously. Allows for code splitting and lazy loading components!",
   "author": "Alistair Shepherd <alistair@accudio.com>",
   "license": "Apache-2.0",
   "keywords": [],

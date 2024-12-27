@@ -143,7 +143,11 @@ const AsyncAlpine = {
     const requirements = parseRequirements(component.strategy);
 
     await this._generateRequirements(component, requirements);
+
+    if (!component.el.isConnected) return;
     await this._download(component.name);
+
+    if (!component.el.isConnected) return;
     this._activate(component);
   },
 

@@ -97,7 +97,9 @@ export default function (Alpine) {
 				el,
 				id: el.id || index(),
 			})
+			if (!el.isConnected) return
 			await download(name)
+			if (!el.isConnected) return
 			activate(el)
 			el._x_async = 'loaded'
 		})()

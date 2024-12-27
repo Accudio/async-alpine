@@ -4,6 +4,10 @@
   <em>Code splitting and lazy-loading components for <a href="https://alpinejs.dev">Alpine.js</a>!</em><br><br>
 </p>
 
+> [!IMPORTANT]
+> This branch is for the 1.x version of Async Alpine, and is no longer actively maintained. This branch exists for backports of fixes/features in exceptional circumstances.
+> [See the main branch for current development on 2.x](https://github.com/Accudio/async-alpine-website)
+
 Async Alpine is a wrapper around the Alpine.js JavaScript framework that allows you to load components asynchronously on-demand.
 
 Alpine.js is a fantastic framework but with a large site with lots of components, the bundle size can start to become a performance problem!
@@ -22,7 +26,7 @@ Using a CDN:
 Using [npm](https://www.npmjs.com/package/async-alpine):
 
 ```sh
-npm install async-alpine
+npm install async-alpine@^1.0
 ```
 
 For more info check out our [Getting Started guide](https://async-alpine.dev/docs/).
@@ -45,4 +49,4 @@ This project is licensed under the Apache-2.0 license.
 
 The full license is included at [LICENSE.md](/accudio/async-alpine/blob/main/LICENSE.md), or at [apache.org/licenses/LICENSE-2.0](https://apache.org/licenses/LICENSE-2.0).
 
-Copyright © 2023 [Alistair Shepherd](https://alistairshepherd.uk).
+Copyright © [Alistair Shepherd](https://alistairshepherd.uk).

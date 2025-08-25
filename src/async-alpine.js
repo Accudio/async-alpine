@@ -183,7 +183,7 @@ export default function (Alpine) {
 
 	// take x-data content to parse out name. 'output("test")' becomes 'output'
 	function parseName(attribute) {
-		const parsedName = (attribute || '').split(/[({]/g)[0]
+		const parsedName = (attribute || '').trim().split(/[({]/g)[0]
 		// we need this to support enabling inline expressions without a download
 		const ourName = parsedName || `_x_async_${index()}`
 		return ourName

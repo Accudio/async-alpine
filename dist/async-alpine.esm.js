@@ -276,7 +276,7 @@ function async_alpine_default(Alpine) {
     Alpine.asyncUrl(name, alias.replaceAll("[name]", name));
   }
   function parseName(attribute) {
-    const parsedName = (attribute || "").split(/[({]/g)[0];
+    const parsedName = (attribute || "").trim().split(/[({]/g)[0];
     const ourName = parsedName || `_x_async_${index()}`;
     return ourName;
   }

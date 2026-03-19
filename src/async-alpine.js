@@ -50,11 +50,21 @@ export default function (Alpine) {
 		data[name] = {
 			loaded: false,
 			download,
+			type: 'data',
+		}
+	}
+
+	// register an async Alpine directive by name and with a download function
+	Alpine.asyncDirective = (name, download = false) => {
+		data[name] = {
+			loaded: false,
+			download,
+			type: 'directive',
 		}
 	}
 
 	// shorthand to specify a direct URL to a module within JS.
-	Alpine.asyncUrl = (name, url) => {
+	Alpine.asyncUrl = (name, url, type = 'data') => {
 		if (!name || !url || data[name]) return
 		data[name] = {
 			loaded: false,
@@ -63,6 +73,7 @@ export default function (Alpine) {
 				/* webpackIgnore: true */
 				parseUrl(url)
 			),
+			type,
 		}
 	}
 	// sets the path or function to fall back to if a component isn't specified
@@ -90,7 +101,7 @@ export default function (Alpine) {
 		Alpine.skipDuringClone(async () => {
 			if (el._x_async !== 'init') return
 			el._x_async = 'await'
-			const { name, strategy } = elementPrep(el)
+			const { name, strategy, directives } = elementPrep(el)
 			await awaitRequirements({
 				name,
 				strategy,
@@ -99,6 +110,7 @@ export default function (Alpine) {
 			})
 			if (!el.isConnected) return
 			await download(name)
+			await Promise.all(directives.map(download))
 			if (!el.isConnected) return
 			activate(el)
 			el._x_async = 'loaded'
@@ -116,18 +128,20 @@ export default function (Alpine) {
 	 */
 	// get name and strategy from the element attributes and handle inline src
 	function elementPrep(el) {
-		const name = parseName(el.getAttribute(Alpine.prefixed('data')))
+		const { name, type } = parseName(el)
+		const directives = parseDirectiveNames(el, name)
 		const strategy = el.getAttribute(Alpine.prefixed(directive)) || options.defaultStrategy
 
 		// convert an inline src attribute into a url function
 		const urlAttributeValue = el.getAttribute(srcAttr)
 		if (urlAttributeValue) {
-			Alpine.asyncUrl(name, urlAttributeValue)
+			Alpine.asyncUrl(name, urlAttributeValue, type)
 		}
 
 		return {
 			name,
 			strategy,
+			directives,
 		}
 	}
 
@@ -139,7 +153,12 @@ export default function (Alpine) {
 		if (!data[name] || data[name].loaded) return
 
 		const module = await getModule(name)
-		Alpine.data(name, module)
+		if (data[name].type === 'directive') {
+			Alpine.directive(name, module)
+		}
+		else {
+			Alpine.data(name, module)
+		}
 		data[name].loaded = true
 	}
 
@@ -182,11 +201,49 @@ export default function (Alpine) {
 	}
 
 	// take x-data content to parse out name. 'output("test")' becomes 'output'
-	function parseName(attribute) {
-		const parsedName = (attribute || '').trim().split(/[({]/g)[0]
+	function parseName(el) {
+		const dataName = (el.getAttribute(Alpine.prefixed('data')) || '').trim().split(/[({]/g)[0]
+		if (dataName) {
+			return {
+				name: dataName,
+				type: 'data',
+			}
+		}
+
+		// if no x-data is set, allow x-load to target pre-registered async directives
+		const prefix = Alpine.prefixed('')
+		for (const { name: attributeName } of Array.from(el.attributes)) {
+			if (!attributeName.startsWith(prefix)) continue
+			const directiveName = attributeName.slice(prefix.length).split(/[.:]/g)[0]
+			if (directiveName === 'data' || directiveName === directive || directiveName === 'ignore') continue
+			if (data[directiveName]?.type === 'directive') {
+				return {
+					name: directiveName,
+					type: 'directive',
+				}
+			}
+		}
+
 		// we need this to support enabling inline expressions without a download
-		const ourName = parsedName || `_x_async_${index()}`
-		return ourName
+		return {
+			name: `_x_async_${index()}`,
+			type: 'data',
+		}
+	}
+
+	function parseDirectiveNames(el, excludedName = false) {
+		const prefix = Alpine.prefixed('')
+		const names = []
+		for (const { name: attributeName } of Array.from(el.attributes)) {
+			if (!attributeName.startsWith(prefix)) continue
+			const directiveName = attributeName.slice(prefix.length).split(/[.:]/g)[0]
+			if (directiveName === 'data' || directiveName === directive || directiveName === 'ignore') continue
+			if (directiveName === excludedName) continue
+			if (data[directiveName]?.type === 'directive') {
+				names.push(directiveName)
+			}
+		}
+		return names
 	}
 
 	// if the URL is relative then convert it to absolute based on the document baseURI

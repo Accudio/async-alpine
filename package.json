@@ -26,7 +26,7 @@
     "*": "npm run format"
   },
   "devDependencies": {
-    "@playwright/test": "^1.45.3",
+    "@playwright/test": "^1.60.0",
     "@stylistic/eslint-plugin": "^2.3.0",
     "@types/node": "^22.0.0",
     "alpinejs": "^3.14.1",
@@ -35,7 +35,7 @@
     "http-server": "^14.1.1",
     "husky": "^9.1.1",
     "lint-staged": "^15.2.7",
-    "playwright": "^1.45.3"
+    "playwright": "^1.60.0"
   },
   "scripts": {
     "dev": "node scripts/build.js --watch",

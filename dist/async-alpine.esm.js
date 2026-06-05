@@ -175,6 +175,7 @@ function async_alpine_default(Alpine) {
   };
   let alias = false;
   let data = {};
+  let directives = {};
   let realIndex = 0;
   function index() {
     return realIndex++;
@@ -204,6 +205,19 @@ function async_alpine_default(Alpine) {
   };
   Alpine.asyncAlias = (path) => {
     alias = path;
+  };
+  Alpine.asyncDirective = (name, download2 = false) => {
+    if (!name || !download2 || directives[name]) return;
+    Alpine.directive(name, async (...args) => {
+      let directiveFunction = directives[name];
+      if (!directiveFunction) {
+        const module = await download2();
+        directiveFunction = whichExport(module, name);
+        directives[name] = directiveFunction;
+      }
+      if (!directiveFunction) return;
+      directiveFunction.apply(this, args);
+    });
   };
   const syncHandler = (el) => {
     Alpine.skipDuringClone(() => {
@@ -256,9 +270,12 @@ function async_alpine_default(Alpine) {
   async function getModule(name) {
     if (!data[name]) return;
     const module = await data[name].download(name);
+    return whichExport(module, name);
+  }
+  function whichExport(module, name) {
     if (typeof module === "function") return module;
-    let whichExport = module[name] || module.default || Object.values(module)[0] || false;
-    return whichExport;
+    let whichExport2 = module[name] || module.default || Object.values(module)[0] || false;
+    return whichExport2;
   }
   function activate(el) {
     Alpine.destroyTree(el);

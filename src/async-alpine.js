@@ -23,8 +23,9 @@ export default function (Alpine) {
 	// if we fall back to an alias when components aren't pre-registered
 	let alias = false
 
-	// data cache
+	// data and directive caches
 	let data = {}
+	let directives = {}
 
 	// index for ID generation
 	let realIndex = 0
@@ -68,6 +69,24 @@ export default function (Alpine) {
 	// sets the path or function to fall back to if a component isn't specified
 	Alpine.asyncAlias = (path) => {
 		alias = path
+	}
+
+	// register a directive by name and with a download function
+	Alpine.asyncDirective = (name, download = false) => {
+		if (!name || !download || directives[name]) return
+
+		Alpine.directive(name, async (...args) => {
+			let directiveFunction = directives[name]
+
+			if (!directiveFunction) {
+				const module = await download()
+				directiveFunction = whichExport(module, name)
+				directives[name] = directiveFunction
+			}
+
+			if (!directiveFunction) return
+			directiveFunction.apply(this, args)
+		})
 	}
 
 	/**
@@ -146,14 +165,17 @@ export default function (Alpine) {
 	// run the callback function to get the module and find the appropriate import
 	async function getModule(name) {
 		if (!data[name]) return
-
 		const module = await data[name].download(name)
+		return whichExport(module, name)
+	}
 
-		// if the download function returns a function instead return that
+	// take the downloaded module and try and find an export in priority order
+	function whichExport(module, name) {
+		// if the download function returns a function return that
 		if (typeof module === 'function') return module
 
 		// work out which export to use in order of preference:
-		// name; default; first export
+		// name; default; first
 		let whichExport = module[name] || module.default || Object.values(module)[0] || false
 		return whichExport
 	}

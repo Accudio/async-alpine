@@ -175,6 +175,7 @@ function async_alpine_default(Alpine) {
   };
   let alias = false;
   let data = {};
+  let directives = {};
   let realIndex = 0;
   function index() {
     return realIndex++;
@@ -188,18 +189,10 @@ function async_alpine_default(Alpine) {
   Alpine.asyncData = (name, download2 = false) => {
     data[name] = {
       loaded: false,
-      download: download2,
-      type: "data"
+      download: download2
     };
   };
-  Alpine.asyncDirective = (name, download2 = false) => {
-    data[name] = {
-      loaded: false,
-      download: download2,
-      type: "directive"
-    };
-  };
-  Alpine.asyncUrl = (name, url, type = "data") => {
+  Alpine.asyncUrl = (name, url) => {
     if (!name || !url || data[name]) return;
     data[name] = {
       loaded: false,
@@ -207,12 +200,24 @@ function async_alpine_default(Alpine) {
         /* @vite-ignore */
         /* webpackIgnore: true */
         parseUrl(url)
-      ),
-      type
+      )
     };
   };
   Alpine.asyncAlias = (path) => {
     alias = path;
+  };
+  Alpine.asyncDirective = (name, download2 = false) => {
+    if (!name || !download2 || directives[name]) return;
+    Alpine.directive(name, async (...args) => {
+      let directiveFunction = directives[name];
+      if (!directiveFunction) {
+        const module = await download2();
+        directiveFunction = whichExport(module, name);
+        directives[name] = directiveFunction;
+      }
+      if (!directiveFunction) return;
+      directiveFunction.apply(this, args);
+    });
   };
   const syncHandler = (el) => {
     Alpine.skipDuringClone(() => {
@@ -226,7 +231,7 @@ function async_alpine_default(Alpine) {
     Alpine.skipDuringClone(async () => {
       if (el._x_async !== "init") return;
       el._x_async = "await";
-      const { name, strategy, directives } = elementPrep(el);
+      const { name, strategy } = elementPrep(el);
       await awaitRequirements({
         name,
         strategy,
@@ -235,7 +240,6 @@ function async_alpine_default(Alpine) {
       });
       if (!el.isConnected) return;
       await download(name);
-      await Promise.all(directives.map(download));
       if (!el.isConnected) return;
       activate(el);
       el._x_async = "loaded";
@@ -244,17 +248,15 @@ function async_alpine_default(Alpine) {
   handler.inline = syncHandler;
   Alpine.directive(directive, handler).before("ignore");
   function elementPrep(el) {
-    const { name, type } = parseName(el);
-    const directives = parseDirectiveNames(el, name);
+    const name = parseName(el.getAttribute(Alpine.prefixed("data")));
     const strategy = el.getAttribute(Alpine.prefixed(directive)) || options.defaultStrategy;
     const urlAttributeValue = el.getAttribute(srcAttr);
     if (urlAttributeValue) {
-      Alpine.asyncUrl(name, urlAttributeValue, type);
+      Alpine.asyncUrl(name, urlAttributeValue);
     }
     return {
       name,
-      strategy,
-      directives
+      strategy
     };
   }
   async function download(name) {
@@ -262,19 +264,18 @@ function async_alpine_default(Alpine) {
     handleAlias(name);
     if (!data[name] || data[name].loaded) return;
     const module = await getModule(name);
-    if (data[name].type === "directive") {
-      Alpine.directive(name, module);
-    } else {
-      Alpine.data(name, module);
-    }
+    Alpine.data(name, module);
     data[name].loaded = true;
   }
   async function getModule(name) {
     if (!data[name]) return;
     const module = await data[name].download(name);
+    return whichExport(module, name);
+  }
+  function whichExport(module, name) {
     if (typeof module === "function") return module;
-    let whichExport = module[name] || module.default || Object.values(module)[0] || false;
-    return whichExport;
+    let whichExport2 = module[name] || module.default || Object.values(module)[0] || false;
+    return whichExport2;
   }
   function activate(el) {
     Alpine.destroyTree(el);
@@ -291,44 +292,10 @@ function async_alpine_default(Alpine) {
     }
     Alpine.asyncUrl(name, alias.replaceAll("[name]", name));
   }
-  function parseName(el) {
-    const dataName = (el.getAttribute(Alpine.prefixed("data")) || "").trim().split(/[({]/g)[0];
-    if (dataName) {
-      return {
-        name: dataName,
-        type: "data"
-      };
-    }
-    const prefix = Alpine.prefixed("");
-    for (const { name: attributeName } of Array.from(el.attributes)) {
-      if (!attributeName.startsWith(prefix)) continue;
-      const directiveName = attributeName.slice(prefix.length).split(/[.:]/g)[0];
-      if (directiveName === "data" || directiveName === directive || directiveName === "ignore") continue;
-      if (data[directiveName]?.type === "directive") {
-        return {
-          name: directiveName,
-          type: "directive"
-        };
-      }
-    }
-    return {
-      name: `_x_async_${index()}`,
-      type: "data"
-    };
-  }
-  function parseDirectiveNames(el, excludedName = false) {
-    const prefix = Alpine.prefixed("");
-    const names = [];
-    for (const { name: attributeName } of Array.from(el.attributes)) {
-      if (!attributeName.startsWith(prefix)) continue;
-      const directiveName = attributeName.slice(prefix.length).split(/[.:]/g)[0];
-      if (directiveName === "data" || directiveName === directive || directiveName === "ignore") continue;
-      if (directiveName === excludedName) continue;
-      if (data[directiveName]?.type === "directive") {
-        names.push(directiveName);
-      }
-    }
-    return names;
+  function parseName(attribute) {
+    const parsedName = (attribute || "").trim().split(/[({]/g)[0];
+    const ourName = parsedName || `_x_async_${index()}`;
+    return ourName;
   }
   function parseUrl(url) {
     if (options.keepRelativeURLs) return url;

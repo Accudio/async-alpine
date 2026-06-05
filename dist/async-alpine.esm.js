@@ -188,10 +188,18 @@ function async_alpine_default(Alpine) {
   Alpine.asyncData = (name, download2 = false) => {
     data[name] = {
       loaded: false,
-      download: download2
+      download: download2,
+      type: "data"
     };
   };
-  Alpine.asyncUrl = (name, url) => {
+  Alpine.asyncDirective = (name, download2 = false) => {
+    data[name] = {
+      loaded: false,
+      download: download2,
+      type: "directive"
+    };
+  };
+  Alpine.asyncUrl = (name, url, type = "data") => {
     if (!name || !url || data[name]) return;
     data[name] = {
       loaded: false,
@@ -199,7 +207,8 @@ function async_alpine_default(Alpine) {
         /* @vite-ignore */
         /* webpackIgnore: true */
         parseUrl(url)
-      )
+      ),
+      type
     };
   };
   Alpine.asyncAlias = (path) => {
@@ -217,7 +226,7 @@ function async_alpine_default(Alpine) {
     Alpine.skipDuringClone(async () => {
       if (el._x_async !== "init") return;
       el._x_async = "await";
-      const { name, strategy } = elementPrep(el);
+      const { name, strategy, directives } = elementPrep(el);
       await awaitRequirements({
         name,
         strategy,
@@ -226,6 +235,7 @@ function async_alpine_default(Alpine) {
       });
       if (!el.isConnected) return;
       await download(name);
+      await Promise.all(directives.map(download));
       if (!el.isConnected) return;
       activate(el);
       el._x_async = "loaded";
@@ -234,15 +244,17 @@ function async_alpine_default(Alpine) {
   handler.inline = syncHandler;
   Alpine.directive(directive, handler).before("ignore");
   function elementPrep(el) {
-    const name = parseName(el.getAttribute(Alpine.prefixed("data")));
+    const { name, type } = parseName(el);
+    const directives = parseDirectiveNames(el, name);
     const strategy = el.getAttribute(Alpine.prefixed(directive)) || options.defaultStrategy;
     const urlAttributeValue = el.getAttribute(srcAttr);
     if (urlAttributeValue) {
-      Alpine.asyncUrl(name, urlAttributeValue);
+      Alpine.asyncUrl(name, urlAttributeValue, type);
     }
     return {
       name,
-      strategy
+      strategy,
+      directives
     };
   }
   async function download(name) {
@@ -250,7 +262,11 @@ function async_alpine_default(Alpine) {
     handleAlias(name);
     if (!data[name] || data[name].loaded) return;
     const module = await getModule(name);
-    Alpine.data(name, module);
+    if (data[name].type === "directive") {
+      Alpine.directive(name, module);
+    } else {
+      Alpine.data(name, module);
+    }
     data[name].loaded = true;
   }
   async function getModule(name) {
@@ -275,10 +291,44 @@ function async_alpine_default(Alpine) {
     }
     Alpine.asyncUrl(name, alias.replaceAll("[name]", name));
   }
-  function parseName(attribute) {
-    const parsedName = (attribute || "").trim().split(/[({]/g)[0];
-    const ourName = parsedName || `_x_async_${index()}`;
-    return ourName;
+  function parseName(el) {
+    const dataName = (el.getAttribute(Alpine.prefixed("data")) || "").trim().split(/[({]/g)[0];
+    if (dataName) {
+      return {
+        name: dataName,
+        type: "data"
+      };
+    }
+    const prefix = Alpine.prefixed("");
+    for (const { name: attributeName } of Array.from(el.attributes)) {
+      if (!attributeName.startsWith(prefix)) continue;
+      const directiveName = attributeName.slice(prefix.length).split(/[.:]/g)[0];
+      if (directiveName === "data" || directiveName === directive || directiveName === "ignore") continue;
+      if (data[directiveName]?.type === "directive") {
+        return {
+          name: directiveName,
+          type: "directive"
+        };
+      }
+    }
+    return {
+      name: `_x_async_${index()}`,
+      type: "data"
+    };
+  }
+  function parseDirectiveNames(el, excludedName = false) {
+    const prefix = Alpine.prefixed("");
+    const names = [];
+    for (const { name: attributeName } of Array.from(el.attributes)) {
+      if (!attributeName.startsWith(prefix)) continue;
+      const directiveName = attributeName.slice(prefix.length).split(/[.:]/g)[0];
+      if (directiveName === "data" || directiveName === directive || directiveName === "ignore") continue;
+      if (directiveName === excludedName) continue;
+      if (data[directiveName]?.type === "directive") {
+        names.push(directiveName);
+      }
+    }
+    return names;
   }
   function parseUrl(url) {
     if (options.keepRelativeURLs) return url;

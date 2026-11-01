@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <title>Morph - Async Alpine tests</title>
+</head>
+<body>
+  <p>Tests morphing a component that is still waiting to load with fresh server HTML, as Livewire does on every update. Passes if no errors are thrown and 'loaded' is output below the buttons after loading.</p>
+
+  <button
+    data-testid="morph-button"
+    x-data
+    @click="Alpine.morph(document.getElementById('wrapper'), document.getElementById('server-html').innerHTML)"
+  >
+    Morph
+  </button>
+
+  <button
+    data-testid="load-button"
+    x-data
+    @click="$dispatch('async-alpine:load', { id: 'my-component' })"
+  >
+    Load
+  </button>
+
+  <div id="wrapper">
+    <div
+      data-testid="result"
+      id="my-component"
+      x-load="event"
+      x-load-src="/tests/assets/output.js"
+      x-data="output('loaded')"
+    ></div>
+  </div>
+
+  <!-- The same markup as a server would send it on an update, without the x-ignore that Async Alpine added to the live element -->
+  <template id="server-html">
+    <div id="wrapper">
+      <div
+        data-testid="result"
+        id="my-component"
+        x-load="event"
+        x-load-src="/tests/assets/output.js"
+        x-data="output('loaded')"
+      ></div>
+    </div>
+  </template>
+
+  <script type="module">
+    import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs/dist/module.esm.js';
+    import morph from 'https://cdn.jsdelivr.net/npm/@alpinejs/morph/dist/module.esm.js';
+    import AsyncAlpine from '/dist/async-alpine.esm.js';
+    window.Alpine = Alpine
+    Alpine.plugin(morph)
+    Alpine.plugin(AsyncAlpine)
+    Alpine.start()
+  </script>
+</body>
+</html>

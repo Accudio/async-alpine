@@ -109,6 +109,15 @@ export default function (Alpine) {
 	handler.inline = syncHandler
 	Alpine.directive(directive, handler).before('ignore')
 
+	// morphing (e.g. Livewire updates) seeds incoming HTML with Alpine.cloneNode(),
+	// which skips our handlers. Keep the clone ignored while the live element is
+	// still waiting, otherwise its x-data is evaluated before the component exists
+	Alpine.interceptClone((from, to) => {
+		if (from._x_async && from._x_async !== 'loaded') {
+			to._x_ignore = true
+		}
+	})
+
 	/**
 	 * =================================
 	 * component lifecycle

@@ -268,6 +268,11 @@ function async_alpine_default(Alpine) {
   };
   handler.inline = syncHandler;
   Alpine.directive(directive, handler).before("ignore");
+  Alpine.interceptClone((from, to) => {
+    if (from._x_async && from._x_async !== "loaded") {
+      to._x_ignore = true;
+    }
+  });
   function elementPrep(el) {
     const name = parseName(el.getAttribute(Alpine.prefixed("data")));
     const strategy = el.getAttribute(Alpine.prefixed(directive)) || options.defaultStrategy;
